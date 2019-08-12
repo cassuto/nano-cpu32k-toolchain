@@ -22,6 +22,7 @@ cache_dir="./cache"
 binutils_version="2.32"
 binutils_checksum="0d174cdaf85721c5723bf52355be41e6"
 binutils_filename="binutils-$binutils_version.tar.xz"
+binutils_patach_filename="ncpu32k-binutils-2.32.patch"
 url_binutils="http://ftp.gnu.org/gnu/binutils/$binutils_filename"
 
 if [ ! -d "$cache_dir" ]; then
@@ -49,10 +50,17 @@ if [ $? != 0 -o "$checksum_md5"x != "$binutils_checksum"x ]; then
     exit 1
 fi
 
-echo "Unpacking '$binutils_filename'..."
+echo "Unpacking '$cache_dir/$binutils_filename'..."
 tar -xvf "$cache_dir/$binutils_filename" -C "./"
-if [ $? != 0 ]; then
+if [ $? != 0 -o ! -d "./binutils-$binutils_version" ]; then
     echo "Error: Failed to unpack file!"
+    exit 1
+fi
+
+echo "Applying patches for binutils-$binutils_version ..."
+patch -p1 -d "./binutils-$binutils_version" < "$binutils_patach_filename"
+if [ $? != 0 ]; then
+    echo "Error: Failed to apply patch!"
     exit 1
 fi
 

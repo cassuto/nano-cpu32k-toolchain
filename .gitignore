@@ -1,2 +1,3 @@
 /cache
 /binutils-*/
+*.rej
