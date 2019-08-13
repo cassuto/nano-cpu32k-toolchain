@@ -2620,7 +2620,7 @@ diff -Nur -x cgen -x build -x .cproject -x .project -x .settings binutils-2.32/c
  			| nios | nios2 | nios2eb | nios2el \
 diff -Nur -x cgen -x build -x .cproject -x .project -x .settings binutils-2.32/cpu/ncpu32k.cpu binutils-ncpu32k-2.32/cpu/ncpu32k.cpu
 --- binutils-2.32/cpu/ncpu32k.cpu	1970-01-01 08:00:00.000000000 +0800
-+++ binutils-ncpu32k-2.32/cpu/ncpu32k.cpu	2019-08-12 18:59:31.317395560 +0800
++++ binutils-ncpu32k-2.32/cpu/ncpu32k.cpu	2019-08-13 14:50:18.972520829 +0800
 @@ -0,0 +1,1075 @@
 +; nano-cpu32k architecture -*- Scheme -*-
 +; Copyright (C) 2019 cassuto <diyer175@hotmail.com>
@@ -2654,8 +2654,8 @@ diff -Nur -x cgen -x build -x .cproject -x .project -x .settings binutils-2.32/c
 +(define-isa
 +  ; Name of the ISA.
 +  (name ncpu32k-isa)
-+  ; Minimum insturction length. (Variable Length 16/32 bits)
-+  (base-insn-bitsize 16)
++  ; Max insturction length. (Variable Length 16/32 bits)
++  (base-insn-bitsize 32)
 +  )
 +
 +(define-cpu
@@ -5416,7 +5416,7 @@ diff -Nur -x cgen -x build -x .cproject -x .project -x .settings binutils-2.32/o
 +}
 diff -Nur -x cgen -x build -x .cproject -x .project -x .settings binutils-2.32/opcodes/ncpu32k-desc.c binutils-ncpu32k-2.32/opcodes/ncpu32k-desc.c
 --- binutils-2.32/opcodes/ncpu32k-desc.c	1970-01-01 08:00:00.000000000 +0800
-+++ binutils-ncpu32k-2.32/opcodes/ncpu32k-desc.c	2019-08-12 18:59:51.677396065 +0800
++++ binutils-ncpu32k-2.32/opcodes/ncpu32k-desc.c	2019-08-13 14:48:15.984517779 +0800
 @@ -0,0 +1,1543 @@
 +/* DO NOT EDIT!  -*- buffer-read-only: t -*- vi:set ro:  */
 +/* CPU data for ncpu32k.
@@ -5535,7 +5535,7 @@ diff -Nur -x cgen -x build -x .cproject -x .project -x .settings binutils-2.32/o
 +/* Instruction set variants.  */
 +
 +static const CGEN_ISA ncpu32k_cgen_isa_table[] = {
-+  { "ncpu32k-isa", 16, 16, 16, 32 },
++  { "ncpu32k-isa", 32, 32, 16, 32 },
 +  { 0, 0, 0, 0, 0 }
 +};
 +
@@ -6300,16 +6300,16 @@ diff -Nur -x cgen -x build -x .cproject -x .project -x .settings binutils-2.32/o
 +{
 +  { NCPU32K_F_NIL, "f-nil", 0, 0, 0, 0, { 0, { { { (1<<MACH_BASE), 0 } } } }  },
 +  { NCPU32K_F_ANYOF, "f-anyof", 0, 0, 0, 0, { 0, { { { (1<<MACH_BASE), 0 } } } }  },
-+  { NCPU32K_F_OPCODE, "f-opcode", 0, 16, 5, 6, { 0, { { { (1<<MACH_BASE), 0 } } } }  },
-+  { NCPU32K_F_RD, "f-rd", 0, 16, 10, 5, { 0, { { { (1<<MACH_BASE), 0 } } } }  },
-+  { NCPU32K_F_RES_RD, "f-res-rd", 0, 16, 10, 5, { 0|A(RESERVED), { { { (1<<MACH_BASE), 0 } } } }  },
-+  { NCPU32K_F_RS, "f-rs", 0, 16, 15, 5, { 0, { { { (1<<MACH_BASE), 0 } } } }  },
-+  { NCPU32K_F_RES_RS, "f-res-rs", 0, 16, 15, 5, { 0|A(RESERVED), { { { (1<<MACH_BASE), 0 } } } }  },
-+  { NCPU32K_F_IMM16, "f-imm16", 16, 16, 15, 16, { 0, { { { (1<<MACH_BASE), 0 } } } }  },
-+  { NCPU32K_F_UIMM16, "f-uimm16", 16, 16, 15, 16, { 0, { { { (1<<MACH_BASE), 0 } } } }  },
-+  { NCPU32K_F_SIMM16, "f-simm16", 16, 16, 15, 16, { 0|A(SIGN_OPT), { { { (1<<MACH_BASE), 0 } } } }  },
-+  { NCPU32K_F_RES_IMM16, "f-res-imm16", 16, 16, 15, 16, { 0|A(RESERVED), { { { (1<<MACH_BASE), 0 } } } }  },
-+  { NCPU32K_F_REL16, "f-rel16", 16, 16, 15, 16, { 0|A(PCREL_ADDR), { { { (1<<MACH_BASE), 0 } } } }  },
++  { NCPU32K_F_OPCODE, "f-opcode", 0, 32, 5, 6, { 0, { { { (1<<MACH_BASE), 0 } } } }  },
++  { NCPU32K_F_RD, "f-rd", 0, 32, 10, 5, { 0, { { { (1<<MACH_BASE), 0 } } } }  },
++  { NCPU32K_F_RES_RD, "f-res-rd", 0, 32, 10, 5, { 0|A(RESERVED), { { { (1<<MACH_BASE), 0 } } } }  },
++  { NCPU32K_F_RS, "f-rs", 0, 32, 15, 5, { 0, { { { (1<<MACH_BASE), 0 } } } }  },
++  { NCPU32K_F_RES_RS, "f-res-rs", 0, 32, 15, 5, { 0|A(RESERVED), { { { (1<<MACH_BASE), 0 } } } }  },
++  { NCPU32K_F_IMM16, "f-imm16", 0, 32, 31, 16, { 0, { { { (1<<MACH_BASE), 0 } } } }  },
++  { NCPU32K_F_UIMM16, "f-uimm16", 0, 32, 31, 16, { 0, { { { (1<<MACH_BASE), 0 } } } }  },
++  { NCPU32K_F_SIMM16, "f-simm16", 0, 32, 31, 16, { 0|A(SIGN_OPT), { { { (1<<MACH_BASE), 0 } } } }  },
++  { NCPU32K_F_RES_IMM16, "f-res-imm16", 0, 32, 31, 16, { 0|A(RESERVED), { { { (1<<MACH_BASE), 0 } } } }  },
++  { NCPU32K_F_REL16, "f-rel16", 0, 32, 31, 16, { 0|A(PCREL_ADDR), { { { (1<<MACH_BASE), 0 } } } }  },
 +  { NCPU32K_F_REL21, "f-rel21", 0, 32, 31, 21, { 0|A(PCREL_ADDR), { { { (1<<MACH_BASE), 0 } } } }  },
 +  { 0, 0, 0, 0, 0, 0, { 0, { { { (1<<MACH_BASE), 0 } } } } }
 +};
@@ -6345,15 +6345,15 @@ diff -Nur -x cgen -x build -x .cproject -x .project -x .settings binutils-2.32/o
 +    { 0, { (const PTR) &ncpu32k_cgen_ifld_table[NCPU32K_F_RD] } },
 +    { 0, { { { (1<<MACH_BASE), 0 } } } }  },
 +/* simm16: 16-bit signed immediate */
-+  { "simm16", NCPU32K_OPERAND_SIMM16, HW_H_SIMM16, 15, 16,
++  { "simm16", NCPU32K_OPERAND_SIMM16, HW_H_SIMM16, 31, 16,
 +    { 0, { (const PTR) &ncpu32k_cgen_ifld_table[NCPU32K_F_SIMM16] } },
 +    { 0|A(SIGN_OPT), { { { (1<<MACH_BASE), 0 } } } }  },
 +/* uimm16: 16-bit unsigned immediate */
-+  { "uimm16", NCPU32K_OPERAND_UIMM16, HW_H_UIMM16, 15, 16,
++  { "uimm16", NCPU32K_OPERAND_UIMM16, HW_H_UIMM16, 31, 16,
 +    { 0, { (const PTR) &ncpu32k_cgen_ifld_table[NCPU32K_F_UIMM16] } },
 +    { 0, { { { (1<<MACH_BASE), 0 } } } }  },
 +/* rel16: pc-rel 16 bit address */
-+  { "rel16", NCPU32K_OPERAND_REL16, HW_H_IADDR, 15, 16,
++  { "rel16", NCPU32K_OPERAND_REL16, HW_H_IADDR, 31, 16,
 +    { 0, { (const PTR) &ncpu32k_cgen_ifld_table[NCPU32K_F_REL16] } },
 +    { 0|A(PCREL_ADDR), { { { (1<<MACH_BASE), 0 } } } }  },
 +/* rel21: pc-rel 21 bit address */
@@ -8073,7 +8073,7 @@ diff -Nur -x cgen -x build -x .cproject -x .project -x .settings binutils-2.32/o
 +}
 diff -Nur -x cgen -x build -x .cproject -x .project -x .settings binutils-2.32/opcodes/ncpu32k-ibld.c binutils-ncpu32k-2.32/opcodes/ncpu32k-ibld.c
 --- binutils-2.32/opcodes/ncpu32k-ibld.c	1970-01-01 08:00:00.000000000 +0800
-+++ binutils-ncpu32k-2.32/opcodes/ncpu32k-ibld.c	2019-08-12 18:41:23.445368586 +0800
++++ binutils-ncpu32k-2.32/opcodes/ncpu32k-ibld.c	2019-08-13 14:48:16.128517783 +0800
 @@ -0,0 +1,871 @@
 +/* DO NOT EDIT!  -*- buffer-read-only: t -*- vi:set ro:  */
 +/* Instruction building/extraction support for ncpu32k. -*- C -*-
@@ -8651,13 +8651,13 @@ diff -Nur -x cgen -x build -x .cproject -x .project -x .settings binutils-2.32/o
 +  switch (opindex)
 +    {
 +    case NCPU32K_OPERAND_RD :
-+      errmsg = insert_normal (cd, fields->f_rd, 0, 0, 10, 5, 16, total_length, buffer);
++      errmsg = insert_normal (cd, fields->f_rd, 0, 0, 10, 5, 32, total_length, buffer);
 +      break;
 +    case NCPU32K_OPERAND_REL16 :
 +      {
 +        long value = fields->f_rel16;
 +        value = ((SI) (((value) - (pc))) >> (1));
-+        errmsg = insert_normal (cd, value, 0|(1<<CGEN_IFLD_SIGNED)|(1<<CGEN_IFLD_PCREL_ADDR), 16, 15, 16, 16, total_length, buffer);
++        errmsg = insert_normal (cd, value, 0|(1<<CGEN_IFLD_SIGNED)|(1<<CGEN_IFLD_PCREL_ADDR), 0, 31, 16, 32, total_length, buffer);
 +      }
 +      break;
 +    case NCPU32K_OPERAND_REL21 :
@@ -8668,13 +8668,13 @@ diff -Nur -x cgen -x build -x .cproject -x .project -x .settings binutils-2.32/o
 +      }
 +      break;
 +    case NCPU32K_OPERAND_RS :
-+      errmsg = insert_normal (cd, fields->f_rs, 0, 0, 15, 5, 16, total_length, buffer);
++      errmsg = insert_normal (cd, fields->f_rs, 0, 0, 15, 5, 32, total_length, buffer);
 +      break;
 +    case NCPU32K_OPERAND_SIMM16 :
-+      errmsg = insert_normal (cd, fields->f_simm16, 0|(1<<CGEN_IFLD_SIGNED)|(1<<CGEN_IFLD_SIGN_OPT), 16, 15, 16, 16, total_length, buffer);
++      errmsg = insert_normal (cd, fields->f_simm16, 0|(1<<CGEN_IFLD_SIGNED)|(1<<CGEN_IFLD_SIGN_OPT), 0, 31, 16, 32, total_length, buffer);
 +      break;
 +    case NCPU32K_OPERAND_UIMM16 :
-+      errmsg = insert_normal (cd, fields->f_uimm16, 0, 16, 15, 16, 16, total_length, buffer);
++      errmsg = insert_normal (cd, fields->f_uimm16, 0, 0, 31, 16, 32, total_length, buffer);
 +      break;
 +
 +    default :
@@ -8720,12 +8720,12 @@ diff -Nur -x cgen -x build -x .cproject -x .project -x .settings binutils-2.32/o
 +  switch (opindex)
 +    {
 +    case NCPU32K_OPERAND_RD :
-+      length = extract_normal (cd, ex_info, insn_value, 0, 0, 10, 5, 16, total_length, pc, & fields->f_rd);
++      length = extract_normal (cd, ex_info, insn_value, 0, 0, 10, 5, 32, total_length, pc, & fields->f_rd);
 +      break;
 +    case NCPU32K_OPERAND_REL16 :
 +      {
 +        long value;
-+        length = extract_normal (cd, ex_info, insn_value, 0|(1<<CGEN_IFLD_SIGNED)|(1<<CGEN_IFLD_PCREL_ADDR), 16, 15, 16, 16, total_length, pc, & value);
++        length = extract_normal (cd, ex_info, insn_value, 0|(1<<CGEN_IFLD_SIGNED)|(1<<CGEN_IFLD_PCREL_ADDR), 0, 31, 16, 32, total_length, pc, & value);
 +        value = ((((value) << (1))) + (pc));
 +        fields->f_rel16 = value;
 +      }
@@ -8739,13 +8739,13 @@ diff -Nur -x cgen -x build -x .cproject -x .project -x .settings binutils-2.32/o
 +      }
 +      break;
 +    case NCPU32K_OPERAND_RS :
-+      length = extract_normal (cd, ex_info, insn_value, 0, 0, 15, 5, 16, total_length, pc, & fields->f_rs);
++      length = extract_normal (cd, ex_info, insn_value, 0, 0, 15, 5, 32, total_length, pc, & fields->f_rs);
 +      break;
 +    case NCPU32K_OPERAND_SIMM16 :
-+      length = extract_normal (cd, ex_info, insn_value, 0|(1<<CGEN_IFLD_SIGNED)|(1<<CGEN_IFLD_SIGN_OPT), 16, 15, 16, 16, total_length, pc, & fields->f_simm16);
++      length = extract_normal (cd, ex_info, insn_value, 0|(1<<CGEN_IFLD_SIGNED)|(1<<CGEN_IFLD_SIGN_OPT), 0, 31, 16, 32, total_length, pc, & fields->f_simm16);
 +      break;
 +    case NCPU32K_OPERAND_UIMM16 :
-+      length = extract_normal (cd, ex_info, insn_value, 0, 16, 15, 16, 16, total_length, pc, & fields->f_uimm16);
++      length = extract_normal (cd, ex_info, insn_value, 0, 0, 31, 16, 32, total_length, pc, & fields->f_uimm16);
 +      break;
 +
 +    default :
@@ -8948,7 +8948,7 @@ diff -Nur -x cgen -x build -x .cproject -x .project -x .settings binutils-2.32/o
 +}
 diff -Nur -x cgen -x build -x .cproject -x .project -x .settings binutils-2.32/opcodes/ncpu32k-opc.c binutils-ncpu32k-2.32/opcodes/ncpu32k-opc.c
 --- binutils-2.32/opcodes/ncpu32k-opc.c	1970-01-01 08:00:00.000000000 +0800
-+++ binutils-ncpu32k-2.32/opcodes/ncpu32k-opc.c	2019-08-12 18:41:23.429368585 +0800
++++ binutils-ncpu32k-2.32/opcodes/ncpu32k-opc.c	2019-08-13 14:48:16.100517782 +0800
 @@ -0,0 +1,530 @@
 +/* DO NOT EDIT!  -*- buffer-read-only: t -*- vi:set ro:  */
 +/* Instruction opcode table for ncpu32k.
@@ -9005,11 +9005,11 @@ diff -Nur -x cgen -x build -x .cproject -x .project -x .settings binutils-2.32/o
 +};
 +
 +static const CGEN_IFMT ifmt_mov ATTRIBUTE_UNUSED = {
-+  16, 32, 0x3f, { { F (F_RS) }, { F (F_RES_IMM16) }, { F (F_RD) }, { F (F_OPCODE) }, { 0 } }
++  32, 32, 0xffff003f, { { F (F_RES_IMM16) }, { F (F_RS) }, { F (F_RD) }, { F (F_OPCODE) }, { 0 } }
 +};
 +
 +static const CGEN_IFMT ifmt_mov_i ATTRIBUTE_UNUSED = {
-+  16, 32, 0xf83f, { { F (F_RES_RS) }, { F (F_UIMM16) }, { F (F_RD) }, { F (F_OPCODE) }, { 0 } }
++  32, 32, 0xf83f, { { F (F_UIMM16) }, { F (F_RES_RS) }, { F (F_RD) }, { F (F_OPCODE) }, { 0 } }
 +};
 +
 +static const CGEN_IFMT ifmt_and ATTRIBUTE_UNUSED = {
@@ -9017,27 +9017,27 @@ diff -Nur -x cgen -x build -x .cproject -x .project -x .settings binutils-2.32/o
 +};
 +
 +static const CGEN_IFMT ifmt_and_i ATTRIBUTE_UNUSED = {
-+  16, 32, 0x3f, { { F (F_RS) }, { F (F_UIMM16) }, { F (F_RD) }, { F (F_OPCODE) }, { 0 } }
++  32, 32, 0x3f, { { F (F_UIMM16) }, { F (F_RS) }, { F (F_RD) }, { F (F_OPCODE) }, { 0 } }
 +};
 +
 +static const CGEN_IFMT ifmt_xor_i ATTRIBUTE_UNUSED = {
-+  16, 32, 0x3f, { { F (F_RS) }, { F (F_SIMM16) }, { F (F_RD) }, { F (F_OPCODE) }, { 0 } }
++  32, 32, 0x3f, { { F (F_SIMM16) }, { F (F_RS) }, { F (F_RD) }, { F (F_OPCODE) }, { 0 } }
 +};
 +
 +static const CGEN_IFMT ifmt_jmp_i ATTRIBUTE_UNUSED = {
-+  16, 32, 0x3f, { { F (F_REL21) }, { F (F_RD) }, { F (F_OPCODE) }, { 0 } }
++  32, 32, 0x3f, { { F (F_REL21) }, { F (F_RD) }, { F (F_OPCODE) }, { 0 } }
 +};
 +
 +static const CGEN_IFMT ifmt_bgt ATTRIBUTE_UNUSED = {
-+  16, 32, 0x3f, { { F (F_RS) }, { F (F_REL16) }, { F (F_RD) }, { F (F_OPCODE) }, { 0 } }
++  32, 32, 0x3f, { { F (F_REL16) }, { F (F_RS) }, { F (F_RD) }, { F (F_OPCODE) }, { 0 } }
 +};
 +
 +static const CGEN_IFMT ifmt_exc ATTRIBUTE_UNUSED = {
-+  16, 32, 0xffff, { { F (F_RES_RS) }, { F (F_UIMM16) }, { F (F_RES_RD) }, { F (F_OPCODE) }, { 0 } }
++  32, 32, 0xffff, { { F (F_UIMM16) }, { F (F_RES_RS) }, { F (F_RES_RD) }, { F (F_OPCODE) }, { 0 } }
 +};
 +
 +static const CGEN_IFMT ifmt_barr ATTRIBUTE_UNUSED = {
-+  16, 32, 0xffff, { { F (F_RES_RS) }, { F (F_RES_IMM16) }, { F (F_RES_RD) }, { F (F_OPCODE) }, { 0 } }
++  32, 32, 0xffffffff, { { F (F_RES_IMM16) }, { F (F_RES_RS) }, { F (F_RES_RD) }, { F (F_OPCODE) }, { 0 } }
 +};
 +
 +#undef F
@@ -9077,7 +9077,7 @@ diff -Nur -x cgen -x build -x .cproject -x .project -x .settings binutils-2.32/o
 +  {
 +    { 0, 0, 0, 0 },
 +    { { MNEM, ' ', 'h', 'i', '(', OP (RD), ')', ',', OP (RS), 0 } },
-+    & ifmt_mov, { 0x16 }
++    & ifmt_mov, { 0x100006 }
 +  },
 +/* and $rd,$rs */
 +  {
