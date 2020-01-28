@@ -2633,7 +2633,7 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +
 diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/config/ncpu32k/ncpu32k.h gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.h
 --- gcc-5.4.0/gcc/config/ncpu32k/ncpu32k.h	1970-01-01 08:00:00.000000000 +0800
-+++ gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.h	2020-01-18 15:03:28.830044407 +0800
++++ gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.h	2020-01-28 22:08:12.714915531 +0800
 @@ -0,0 +1,1139 @@
 +/* Definitions of target machine for GNU compiler. nano-cpu32k version.
 +   Copyright (C) 2019 Free Software Foundation, Inc.
@@ -3776,8 +3776,8 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +
 diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/config/ncpu32k/ncpu32k.md gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.md
 --- gcc-5.4.0/gcc/config/ncpu32k/ncpu32k.md	1970-01-01 08:00:00.000000000 +0800
-+++ gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.md	2020-01-17 10:40:05.063674186 +0800
-@@ -0,0 +1,1348 @@
++++ gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.md	2020-01-28 22:39:31.366860710 +0800
+@@ -0,0 +1,1363 @@
 +;; Machine description for GNU compiler, nano-cpu32k ISA
 +;; Copyright (C) 2019 Free Software Foundation, Inc.
 +;;
@@ -4236,46 +4236,61 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +;; Integer compare insns.
 +(define_insn "*cmpsi_eq"
 +  [(set (reg:CCEQ CC_REG)
-+	(compare:CCEQ (match_operand:SI 0 "register_operand" "r")
-+		      (match_operand:SI 1 "nonmemory_operand" "r")))]
++	(compare:CCEQ (match_operand:SI 0 "register_operand" "r,r,J")
++		      (match_operand:SI 1 "nonmemory_operand" "r,J,r")))]
 +  ""
-+  "cmp \t%0,eq,%1\t# cmpsi_eq"
++  "@
++   cmp \t%0,eq,%1\t# cmpsi_eq
++   cmp \t%0,eq,r0\t# cmpsi_eq_zero1
++   cmp \tr0,eq,%1\t# cmpsi_eq_zero0"
 +  [(set_attr "type" "compare")
 +   (set_attr "length" "1")])
 +
 +(define_insn "*cmpsi_gt"
 +  [(set (reg:CCGT CC_REG)
-+	(compare:CCGT (match_operand:SI 0 "register_operand" "r")
-+		      (match_operand:SI 1 "nonmemory_operand" "r")))]
++	(compare:CCGT (match_operand:SI 0 "register_operand" "r,r,J")
++		      (match_operand:SI 1 "nonmemory_operand" "r,J,r")))]
 +  ""
-+  "cmp \t%0,gt,%1\t# cmpsi_gt"
++  "@
++   cmp \t%0,gt,%1\t# cmpsi_gt
++   cmp \t%0,gt,r0\t# cmpsi_gt_zero1
++   cmp \tr0,gt,%1\t# cmpsi_gt_zero0"
 +  [(set_attr "type" "compare")
 +   (set_attr "length" "1")])
 +
 +(define_insn "*cmpsi_gtu"
 +  [(set (reg:CCGTU CC_REG)
-+	(compare:CCGTU (match_operand:SI 0 "register_operand" "r")
-+		       (match_operand:SI 1 "nonmemory_operand" "r")))]
++	(compare:CCGTU (match_operand:SI 0 "register_operand" "r,r,J")
++		       (match_operand:SI 1 "nonmemory_operand" "r,J,r")))]
 +  ""
-+  "cmp \t%0,gtu,%1\t# cmpsi_gtu"
++  "@
++   cmp \t%0,gtu,%1\t# cmpsi_gtu
++   cmp \t%0,gtu,r0\t# cmpsi_gtu_zero1
++   cmp \tr0,gtu,%1\t# cmpsi_gtu_zero0"
 +  [(set_attr "type" "compare")
 +   (set_attr "length" "1")])
 +
 +(define_insn "*cmpsi_lt"
 +  [(set (reg:CCLT CC_REG)
-+	(compare:CCLT (match_operand:SI 0 "register_operand" "r")
-+		      (match_operand:SI 1 "nonmemory_operand" "r")))]
++	(compare:CCLT (match_operand:SI 0 "register_operand" "r,J,r")
++		      (match_operand:SI 1 "nonmemory_operand" "r,r,J")))]
 +  ""
-+  "cmp \t%1,gt,%0\t# cmpsi_lt"
++  "@
++   cmp \t%1,gt,%0\t# cmpsi_lt
++   cmp \t%1,gt,r0\t# cmpsi_lt_zero0
++   cmp \tr0,gt,%0\t# cmpsi_lt_zero1"
 +  [(set_attr "type" "compare")
 +   (set_attr "length" "1")])
 +
 +(define_insn "*cmpsi_ltu"
 +  [(set (reg:CCLTU CC_REG)
-+	(compare:CCLTU (match_operand:SI 0 "register_operand" "r")
-+		       (match_operand:SI 1 "nonmemory_operand" "r")))]
++	(compare:CCLTU (match_operand:SI 0 "register_operand" "r,J,r")
++		       (match_operand:SI 1 "nonmemory_operand" "r,r,J")))]
 +  ""
-+  "cmp \t%1,gtu,%0\t# cmpsi_ltu"
++  "@
++   cmp \t%1,gtu,%0\t# cmpsi_ltu
++   cmp \t%1,gtu,r0\t# cmpsi_ltu_zero0
++   cmp \tr0,gtu,%0\t# cmpsi_ltu_zero1"
 +  [(set_attr "type" "compare")
 +   (set_attr "length" "1")])
 +
@@ -4907,8 +4922,8 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +
 +(define_insn "*cmpsf_eq"
 +  [(set (reg:CCEQ CC_REG)
-+	(compare:CCEQ (match_operand:SF 0 "register_operand" "r,r")
-+		      (match_operand:SF 1 "register_operand" "r,r")))]
++	(compare:CCEQ (match_operand:SF 0 "register_operand" "r")
++		      (match_operand:SF 1 "register_operand" "r")))]
 +  "TARGET_HARD_FLOAT"
 +  "fcmps \t%0,eq,%1\t# cmpsf_eq"
 +  [(set_attr "type" "compare")
@@ -4916,8 +4931,8 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +
 +(define_insn "*cmpsf_gt"
 +  [(set (reg:CCGT CC_REG)
-+	(compare:CCGT (match_operand:SF 0 "register_operand" "r,r")
-+		      (match_operand:SF 1 "register_operand" "r,r")))]
++	(compare:CCGT (match_operand:SF 0 "register_operand" "r")
++		      (match_operand:SF 1 "register_operand" "r")))]
 +  "TARGET_HARD_FLOAT"
 +  "fcmps \t%0,%gt,1\t# cmpsf_gt"
 +  [(set_attr "type" "compare")
@@ -4925,8 +4940,8 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +
 +(define_insn "*cmpsf_lt"
 +  [(set (reg:CCLT CC_REG)
-+	(compare:CCLT (match_operand:SF 0 "register_operand" "r,r")
-+		      (match_operand:SF 1 "register_operand" "r,r")))]
++	(compare:CCLT (match_operand:SF 0 "register_operand" "r")
++		      (match_operand:SF 1 "register_operand" "r")))]
 +  "TARGET_HARD_FLOAT"
 +  "fcmps \t%0,gt,%1\t# cmpsf_lt"
 +  [(set_attr "type" "compare")
