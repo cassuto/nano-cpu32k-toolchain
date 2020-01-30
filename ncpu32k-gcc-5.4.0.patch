@@ -341,7 +341,7 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +#define CLEAR_INSN_CACHE(BEG, END) /* Do something here !!! */
 diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/config/ncpu32k/ncpu32k.c gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.c
 --- gcc-5.4.0/gcc/config/ncpu32k/ncpu32k.c	1970-01-01 08:00:00.000000000 +0800
-+++ gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.c	2020-01-16 14:10:25.959766221 +0800
++++ gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.c	2020-01-30 16:29:54.247602351 +0800
 @@ -0,0 +1,2288 @@
 +/* Subroutines for insn-output.c for GNU compiler.  nano-cpu32k version.
 +   Copyright (C) 2019 Free Software Foundation, Inc
@@ -412,7 +412,7 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +/* Number of lnk register */
 +#define NCPU32K_GPR_LNK 1
 +/* Number of rv register */
-+#define NCPU32K_GPR_RV 11
++#define NCPU32K_GPR_RV 10
 +
 +/* Construct a mhi instruction for the given reg and value */
 +#define NCPU32K_MHI(rd, imm)						\

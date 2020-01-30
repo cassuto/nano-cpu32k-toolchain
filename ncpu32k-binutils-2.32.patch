@@ -30,7 +30,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
      &bfd_nios2_arch,
 diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutils-2.32/bfd/bfd-in2.h binutils-ncpu32k-2.32/bfd/bfd-in2.h
 --- binutils-2.32/bfd/bfd-in2.h	2019-01-20 00:01:32.000000000 +0800
-+++ binutils-ncpu32k-2.32/bfd/bfd-in2.h	2020-01-16 14:39:44.567660860 +0800
++++ binutils-ncpu32k-2.32/bfd/bfd-in2.h	2020-01-30 15:58:49.959707235 +0800
 @@ -2441,6 +2441,10 @@
  #define bfd_mach_ck803         5
  #define bfd_mach_ck807         6
@@ -51,7 +51,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +  BFD_RELOC_NCPU32K_HI14,
 +  BFD_RELOC_NCPU32K_LO18,
 +  BFD_RELOC_NCPU32K_HI18,
-+  BFD_RELOC_NCPU32K_REL_20,
++  BFD_RELOC_NCPU32K_REL_26,
 +  BFD_RELOC_NCPU32K_GLOB_DAT,
 +  BFD_RELOC_NCPU32K_JMP_SLOT,
 +  BFD_RELOC_NCPU32K_RELATIVE,
@@ -149,8 +149,8 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +
 diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutils-2.32/bfd/elf32-ncpu32k.c binutils-ncpu32k-2.32/bfd/elf32-ncpu32k.c
 --- binutils-2.32/bfd/elf32-ncpu32k.c	1970-01-01 08:00:00.000000000 +0800
-+++ binutils-ncpu32k-2.32/bfd/elf32-ncpu32k.c	2020-01-22 11:04:49.827800424 +0800
-@@ -0,0 +1,2248 @@
++++ binutils-ncpu32k-2.32/bfd/elf32-ncpu32k.c	2020-01-30 16:16:31.023647540 +0800
+@@ -0,0 +1,2247 @@
 +/* nano-CPU32k-specific support for 32-bit ELF.
 +   Copyright (C) 2019 Free Software Foundation, Inc.
 +   largely based on elf32-or1k.c elf32-m32r.c and elf32-microblaze.c.
@@ -180,7 +180,6 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +#define NCPU32K_NREG_LNK 1
 +#define NCPU32K_NREG_RV 10
 +#define NCPU32K_NREG_RVH 11
-+#define NCPU32K_NREG_TLS 12
 +#define NCPU32K_NREG_GOT 14
 +
 +#define N_ONES(X)	(((bfd_vma)2 << (X)) - 1)
@@ -304,19 +303,19 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +         0xffffc000,            /* dst_mask */
 +         FALSE),                /* pcrel_offset */
 +
-+  /* A PC relative 20 bit relocation, right shifted by 2.  */
-+  HOWTO (R_NCPU32K_INSN_REL_20, /* type */
++  /* A PC relative 26 bit relocation, right shifted by 2.  */
++  HOWTO (R_NCPU32K_INSN_REL_26, /* type */
 +	 2,			/* rightshift */
 +	 2,			/* size (0 = byte, 1 = short, 2 = long) */
-+	 20,			/* bitsize */
++	 26,			/* bitsize */
 +	 TRUE,			/* pc_relative */
-+	 12,			/* bitpos */
++	 6,			/* bitpos */
 +	 complain_overflow_signed, /* complain_on_overflow */
 +	 bfd_elf_generic_reloc, /* special_function */
-+	 "R_NCPU32K_INSN_REL_20", /* name */
++	 "R_NCPU32K_INSN_REL_26", /* name */
 +	 FALSE,			/* partial_inplace */
 +	 0,			/* src_mask */
-+	 0xfffff000,		/* dst_mask */
++	 0xffffffc0,		/* dst_mask */
 +	 TRUE),			/* pcrel_offset */
 +
 +  /* GNU extension to record C++ vtable hierarchy.  */
@@ -425,7 +424,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +  { BFD_RELOC_NCPU32K_HI14,             R_NCPU32K_HI14 },
 +  { BFD_RELOC_NCPU32K_LO18,             R_NCPU32K_LO18 },
 +  { BFD_RELOC_NCPU32K_HI18,             R_NCPU32K_HI18 },
-+  { BFD_RELOC_NCPU32K_REL_20,		R_NCPU32K_INSN_REL_20 },
++  { BFD_RELOC_NCPU32K_REL_26,		R_NCPU32K_INSN_REL_26 },
 +  { BFD_RELOC_VTABLE_ENTRY,		R_NCPU32K_GNU_VTENTRY },
 +  { BFD_RELOC_VTABLE_INHERIT,		R_NCPU32K_GNU_VTINHERIT },
 +  { BFD_RELOC_NCPU32K_GLOB_DAT,		R_NCPU32K_GLOB_DAT },
@@ -640,7 +639,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +
 +  switch (howto->type)
 +    {
-+    case R_NCPU32K_INSN_REL_20:
++    case R_NCPU32K_INSN_REL_26:
 +      value -= place;
 +      /* Diagnose mis-aligned (non 4 byte) branch targets.  */
 +      if (value & 0x3)
@@ -853,7 +852,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +
 +      switch (howto->type)
 +	{
-+	case R_NCPU32K_INSN_REL_20:
++	case R_NCPU32K_INSN_REL_26:
 +	  /* For a non-shared link, these will reference either the plt
 +	     or a .dynbss copy of the symbol.  */
 +	  if (bfd_link_pic (info) && !SYMBOL_REFERENCES_LOCAL (info, h))
@@ -1109,7 +1108,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +	    return FALSE;
 +	  break;
 +
-+	case R_NCPU32K_INSN_REL_20:
++	case R_NCPU32K_INSN_REL_26:
 +	case R_NCPU32K_32:
 +	  {
 +	    if (h != NULL && !bfd_link_pic (info))
@@ -1119,7 +1118,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +
 +		/* We may also need a .plt entry.  */
 +		h->plt.refcount += 1;
-+		if (r_type != R_NCPU32K_INSN_REL_20)
++		if (r_type != R_NCPU32K_INSN_REL_26)
 +		  h->pointer_equality_needed = 1;
 +	      }
 +
@@ -1147,7 +1146,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +
 +	    if ((bfd_link_pic (info)
 +		 && (sec->flags & SEC_ALLOC) != 0
-+		 && ((r_type != R_NCPU32K_INSN_REL_20)
++		 && ((r_type != R_NCPU32K_INSN_REL_26)
 +		     || (h != NULL
 +			 && (!SYMBOLIC_BIND (info, h)
 +			     || h->root.type == bfd_link_hash_defweak
@@ -1243,7 +1242,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +		  }
 +
 +		p->count += 1;
-+		if (r_type == R_NCPU32K_INSN_REL_20)
++		if (r_type == R_NCPU32K_INSN_REL_26)
 +		  p->pc_count += 1;
 +	      }
 +	  }
@@ -1258,12 +1257,12 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +
 +#define NCPU32K_ROP_INSN32(RS2,RS1,RD,OPC)	((OPC) | ((RD) << 6) | ((RS1) << 12) | ((RS2) << 18))
 +#define NCPU32K_IMM14_INSN32(IMM,RS1,RD,OPC)	((OPC) | ((RD) << 6) | ((RS1) << 12) | ((IMM) << 18))
-+#define NCPU32K_IMM16_INSN32(IMM,RD,OPC)	((OPC) | ((RD) << 6) | ((IMM) << 12))
-+#define NCPU32K_REL_INSN32(REL,RD,OPC)		((OPC) | ((RD) << 6) | ((REL) << 12))
++#define NCPU32K_IMM18_INSN32(IMM,RD,OPC)	((OPC) | ((RD) << 6) | ((IMM) << 12))
++#define NCPU32K_REL26_INSN32(REL,OPC)		((OPC) | ((REL) << 6))
 +
-+#define NCPU32K_MHI(RD,IMM)		NCPU32K_IMM16_INSN32(IMM, RD,0x0000002a)
++#define NCPU32K_MHI(RD,IMM)		NCPU32K_IMM18_INSN32(IMM, RD,0x0000002a)
 +#define NCPU32K_LDWU(RD,A,IMM)		NCPU32K_IMM14_INSN32(IMM, A,RD,0x0000000f)
-+#define NCPU32K_MOV(RD,IMM)		NCPU32K_IMM14_INSN32(IMM, 0,RD,0x00000003) /* or.i */
++#define NCPU32K_MOV(RD,IMM)		NCPU32K_IMM14_INSN32(IMM, 0,RD,0x0000001d) /* add.i */
 +#define NCPU32K_JMP(RS)			NCPU32K_ROP_INSN32(0, RS, NCPU32K_NREG_LNK,0x000a)
 +#define NCPU32K_AND_I(RD,RS1,IMM)	NCPU32K_IMM14_INSN32(IMM, RS1,	RD,0x0001)
 +#define NCPU32K_NOP			NCPU32K_ROP_INSN32(0, 0,	0,0x0002) /* or */
@@ -2412,7 +2411,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
  
 diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutils-2.32/bfd/libbfd.h binutils-ncpu32k-2.32/bfd/libbfd.h
 --- binutils-2.32/bfd/libbfd.h	2019-01-20 00:01:33.000000000 +0800
-+++ binutils-ncpu32k-2.32/bfd/libbfd.h	2020-01-16 14:39:44.591660859 +0800
++++ binutils-ncpu32k-2.32/bfd/libbfd.h	2020-01-30 15:58:49.971707234 +0800
 @@ -2801,6 +2801,15 @@
    "BFD_RELOC_NIOS2_R2_L5I4X1",
    "BFD_RELOC_NIOS2_R2_T1X1I6",
@@ -2421,7 +2420,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +  "BFD_RELOC_NCPU32K_HI14",
 +  "BFD_RELOC_NCPU32K_LO18",
 +  "BFD_RELOC_NCPU32K_HI18",
-+  "BFD_RELOC_NCPU32K_REL_20",
++  "BFD_RELOC_NCPU32K_REL_26",
 +  "BFD_RELOC_NCPU32K_GLOB_DAT",
 +  "BFD_RELOC_NCPU32K_JMP_SLOT",
 +  "BFD_RELOC_NCPU32K_RELATIVE",
@@ -2517,7 +2516,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf32-or1k.Plo@am__quote@
 diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutils-2.32/bfd/reloc.c binutils-ncpu32k-2.32/bfd/reloc.c
 --- binutils-2.32/bfd/reloc.c	2019-01-20 00:01:33.000000000 +0800
-+++ binutils-ncpu32k-2.32/bfd/reloc.c	2020-01-16 14:23:40.279718632 +0800
++++ binutils-ncpu32k-2.32/bfd/reloc.c	2020-01-30 15:53:43.051724501 +0800
 @@ -6463,6 +6463,27 @@
    Relocations used by the Altera Nios II core.
  
@@ -2530,7 +2529,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +ENUMX
 +  BFD_RELOC_NCPU32K_HI18
 +ENUMX
-+  BFD_RELOC_NCPU32K_REL_20
++  BFD_RELOC_NCPU32K_REL_26
 +ENUMX
 +  BFD_RELOC_NCPU32K_GLOB_DAT
 +ENUMX
@@ -2675,8 +2674,8 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
  			| nios | nios2 | nios2eb | nios2el \
 diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutils-2.32/cpu/ncpu32k.cpu binutils-ncpu32k-2.32/cpu/ncpu32k.cpu
 --- binutils-2.32/cpu/ncpu32k.cpu	1970-01-01 08:00:00.000000000 +0800
-+++ binutils-ncpu32k-2.32/cpu/ncpu32k.cpu	2020-01-22 16:20:13.991951081 +0800
-@@ -0,0 +1,1069 @@
++++ binutils-ncpu32k-2.32/cpu/ncpu32k.cpu	2020-01-30 16:01:39.911697674 +0800
+@@ -0,0 +1,1083 @@
 +; nano-cpu32k architecture -*- Scheme -*-
 +; Copyright (C) 2019 cassuto
 +;***************************************************************************
@@ -3070,12 +3069,12 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +(dnf f-uimm18     "uimm18"        ()      29 18)
 +(dnf f-res-imm2   "<res>-<imm2>"  (RESERVED) 31 2)
 +
-+; <address> PC relative, 20-bit
-+(df f-rel20
-+    "rel20"
++; <address> PC relative, 26-bit
++(df f-rel26
++    "rel26"
 +    (PCREL-ADDR)
 +    31
-+    20
++    26
 +    INT
 +    ((value pc) (sra SI (sub IAI value pc) (const 2)))
 +    ((value pc) (add IAI (sll IAI value (const 2)) pc))
@@ -3115,7 +3114,8 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +   ("RMSR"              #x15)
 +   ("VENTER"            #x16)
 +   ("VLEAVE"            #x17)
-+   
++   ("JMP.I.LNK"         #x18)
++
 +   ; VIRT insn group
 +   ("ASR"               #x1a)
 +   ("ASR.I"             #x1b)
@@ -3183,12 +3183,12 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +  )
 +
 +(define-operand
-+  (name rel20)
-+  (comment "pc-rel 20 bit address")
++  (name rel26)
++  (comment "pc-rel 26 bit address")
 +  (attrs)
 +  (type h-iaddr)
-+  (index f-rel20)
-+  (handlers (parse "rel20"))
++  (index f-rel26)
++  (handlers (parse "rel26"))
 +  )
 +
 +; Hardware for semantic atomic registers
@@ -3469,7 +3469,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +     ()
 +     "mhi $rd,${uimm18}"
 +     (+ OPC_MHI rd uimm18 (f-res-imm2 0))
-+     (set UWI rd (sll UWI (zext UWI uimm18) (const 16)))
++     (set UWI rd (sll UWI (zext UWI uimm18) (const 14)))
 +     ()
 + )
 +
@@ -3573,36 +3573,49 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +
 +(define-cbi
 +  jmp.i
-+  "jmp segment (pc-relative rel20)"
++  "jmp segment (pc-relative rel26)"
 +  (!COND-CTI UNCOND-CTI)
-+  "jmp $rd,${rel20}"
-+  (+ OPC_JMP.I rd rel20)
++  "jmp r0,${rel26}"
++  (+ OPC_JMP.I rel26)
 +  (.pmacro ()
 +           (sequence ()
-+                     (cbi-link-return rd 4)
-+                     (cbi-transfer-control 1 rel20)
++                     (cbi-transfer-control 1 rel26)
 +                     )
 +           )
 + )
++(define-cbi
++  jmp.i.lnk
++  "jmp segment with link (pc-relative rel26)"
++  (!COND-CTI UNCOND-CTI)
++  "jmp lnk,${rel26}"
++  (+ OPC_JMP.I.LNK rel26)
++  (.pmacro ()
++           (sequence ()
++                     (cbi-link-return 1 4)
++                     (cbi-transfer-control 1 rel26)
++                     )
++           )
++ )
++
 +
 +(define-cbi
 +  bt
 +  "branch if condition is true (pc relative addressing)"
 +  (COND-CTI !UNCOND-CTI)
-+  "bt ${rel20}"
-+  (+ OPC_BT (f-res-rd 0) rel20)
++  "bt ${rel26}"
++  (+ OPC_BT rel26)
 +  (.pmacro ()
-+           (cbi-transfer-control msr-psr-cc rel20)
++           (cbi-transfer-control msr-psr-cc rel26)
 +           )
 + )
 +(define-cbi
 +  bf
 +  "branch if condition is false (pc relative addressing)"
 +  (COND-CTI !UNCOND-CTI)
-+  "bf ${rel20}"
-+  (+ OPC_BF (f-res-rd 0) rel20)
++  "bf ${rel26}"
++  (+ OPC_BF rel26)
 +  (.pmacro ()
-+           (cbi-transfer-control (not msr-psr-cc) rel20)
++           (cbi-transfer-control (not msr-psr-cc) rel26)
 +           )
 + )
 +
@@ -3748,7 +3761,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 + )
 diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutils-2.32/cpu/ncpu32k.opc binutils-ncpu32k-2.32/cpu/ncpu32k.opc
 --- binutils-2.32/cpu/ncpu32k.opc	1970-01-01 08:00:00.000000000 +0800
-+++ binutils-ncpu32k-2.32/cpu/ncpu32k.opc	2020-01-16 14:49:55.727624245 +0800
++++ binutils-ncpu32k-2.32/cpu/ncpu32k.opc	2020-01-30 15:49:11.079739802 +0800
 @@ -0,0 +1,208 @@
 +/* nano-CPU32k opcode support.  -*- C -*-
 +   Copyright 2019 Free Software Foundation, Inc.
@@ -3796,14 +3809,14 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +#define CGEN_VERBOSE_ASSEMBLER_ERRORS
 +
 +static const char *
-+parse_rel20 (CGEN_CPU_DESC cd,
++parse_rel26 (CGEN_CPU_DESC cd,
 +	      const char ** strp,
 +	      int opindex,
 +	      int opinfo ATTRIBUTE_UNUSED,
 +	      enum cgen_parse_operand_result * resultp,
 +	      bfd_vma * valuep)
 +{
-+  return cgen_parse_address (cd, strp, opindex, BFD_RELOC_NCPU32K_REL_20, resultp, valuep);
++  return cgen_parse_address (cd, strp, opindex, BFD_RELOC_NCPU32K_REL_26, resultp, valuep);
 +}
 +
 +static const char *
@@ -3974,7 +3987,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
    // Old FR30 objects used 0x3330 (EM_FR30 is correct).
 diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutils-2.32/gas/config/tc-ncpu32k.c binutils-ncpu32k-2.32/gas/config/tc-ncpu32k.c
 --- binutils-2.32/gas/config/tc-ncpu32k.c	1970-01-01 08:00:00.000000000 +0800
-+++ binutils-ncpu32k-2.32/gas/config/tc-ncpu32k.c	2020-01-14 16:18:53.172157614 +0800
++++ binutils-ncpu32k-2.32/gas/config/tc-ncpu32k.c	2020-01-30 15:59:31.407704903 +0800
 @@ -0,0 +1,371 @@
 +/* tc-ncpu32k.c -- Assembler for the nano-CPU32k processor.
 +   Copyright (C) 2019 Free Software Foundation, Inc.
@@ -4026,8 +4039,8 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +}
 +ncpu32k_insn;
 +
-+/* Bit length of REL20 field */
-+#define N_REL_BITS 20
++/* Bit length of REL field */
++#define N_REL_BITS 26
 +
 +const char comment_chars[]        = "#";
 +const char line_comment_chars[]   = "#";
@@ -4222,9 +4235,9 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +
 +  switch (operand->type)
 +    {
-+    case NCPU32K_OPERAND_REL20:
++    case NCPU32K_OPERAND_REL26:
 +      fixP->fx_pcrel = 1;
-+      return BFD_RELOC_NCPU32K_REL_20;
++      return BFD_RELOC_NCPU32K_REL_26;
 +
 +    default: /* avoid -Wall warning */
 +      return BFD_RELOC_NONE;
@@ -4547,7 +4560,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
  /* Values for e_version.  */
 diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutils-2.32/include/elf/ncpu32k.h binutils-ncpu32k-2.32/include/elf/ncpu32k.h
 --- binutils-2.32/include/elf/ncpu32k.h	1970-01-01 08:00:00.000000000 +0800
-+++ binutils-ncpu32k-2.32/include/elf/ncpu32k.h	2020-01-16 14:28:53.471699869 +0800
++++ binutils-ncpu32k-2.32/include/elf/ncpu32k.h	2020-01-30 15:54:04.103723317 +0800
 @@ -0,0 +1,44 @@
 +/* nano-CPU32k ELF support for BFD.
 +   Copyright (C) 2019 Free Software Foundation, Inc.
@@ -4582,7 +4595,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +  RELOC_NUMBER (R_NCPU32K_HI14,           5)
 +  RELOC_NUMBER (R_NCPU32K_LO18,           6)
 +  RELOC_NUMBER (R_NCPU32K_HI18,           7)
-+  RELOC_NUMBER (R_NCPU32K_INSN_REL_20,    8)
++  RELOC_NUMBER (R_NCPU32K_INSN_REL_26,    8)
 +  RELOC_NUMBER (R_NCPU32K_GNU_VTENTRY,    9)
 +  RELOC_NUMBER (R_NCPU32K_GNU_VTINHERIT, 10)
 +  RELOC_NUMBER (R_NCPU32K_COPY,          11)
@@ -4880,7 +4893,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
  stamp-or1k: $(CGENDEPS) $(CPUDIR)/or1k.cpu $(CPUDIR)/or1k.opc $(CPUDIR)/or1kcommon.cpu $(CPUDIR)/or1korbis.cpu $(CPUDIR)/or1korfpx.cpu
 diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutils-2.32/opcodes/ncpu32k-asm.c binutils-ncpu32k-2.32/opcodes/ncpu32k-asm.c
 --- binutils-2.32/opcodes/ncpu32k-asm.c	1970-01-01 08:00:00.000000000 +0800
-+++ binutils-ncpu32k-2.32/opcodes/ncpu32k-asm.c	2020-01-16 14:50:12.235623256 +0800
++++ binutils-ncpu32k-2.32/opcodes/ncpu32k-asm.c	2020-01-30 15:59:04.879706396 +0800
 @@ -0,0 +1,682 @@
 +/* DO NOT EDIT!  -*- buffer-read-only: t -*- vi:set ro:  */
 +/* Assembler interface for targets using CGEN. -*- C -*-
@@ -4940,14 +4953,14 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +#define CGEN_VERBOSE_ASSEMBLER_ERRORS
 +
 +static const char *
-+parse_rel20 (CGEN_CPU_DESC cd,
++parse_rel26 (CGEN_CPU_DESC cd,
 +	      const char ** strp,
 +	      int opindex,
 +	      int opinfo ATTRIBUTE_UNUSED,
 +	      enum cgen_parse_operand_result * resultp,
 +	      bfd_vma * valuep)
 +{
-+  return cgen_parse_address (cd, strp, opindex, BFD_RELOC_NCPU32K_REL_20, resultp, valuep);
++  return cgen_parse_address (cd, strp, opindex, BFD_RELOC_NCPU32K_REL_26, resultp, valuep);
 +}
 +
 +static const char *
@@ -5130,11 +5143,11 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +    case NCPU32K_OPERAND_RD :
 +      errmsg = cgen_parse_keyword (cd, strp, & ncpu32k_cgen_opval_h_gpr, & fields->f_rd);
 +      break;
-+    case NCPU32K_OPERAND_REL20 :
++    case NCPU32K_OPERAND_REL26 :
 +      {
 +        bfd_vma value = 0;
-+        errmsg = parse_rel20 (cd, strp, NCPU32K_OPERAND_REL20, 0, NULL,  & value);
-+        fields->f_rel20 = value;
++        errmsg = parse_rel26 (cd, strp, NCPU32K_OPERAND_REL26, 0, NULL,  & value);
++        fields->f_rel26 = value;
 +      }
 +      break;
 +    case NCPU32K_OPERAND_RS1 :
@@ -5566,8 +5579,8 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +}
 diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutils-2.32/opcodes/ncpu32k-desc.c binutils-ncpu32k-2.32/opcodes/ncpu32k-desc.c
 --- binutils-2.32/opcodes/ncpu32k-desc.c	1970-01-01 08:00:00.000000000 +0800
-+++ binutils-ncpu32k-2.32/opcodes/ncpu32k-desc.c	2020-01-22 16:20:16.179950950 +0800
-@@ -0,0 +1,1039 @@
++++ binutils-ncpu32k-2.32/opcodes/ncpu32k-desc.c	2020-01-30 16:01:41.859697564 +0800
+@@ -0,0 +1,1044 @@
 +/* DO NOT EDIT!  -*- buffer-read-only: t -*- vi:set ro:  */
 +/* CPU data for ncpu32k.
 +
@@ -5935,7 +5948,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +  { NCPU32K_F_RES_IMM14, "f-res-imm14", 0, 32, 31, 14, { 0|A(RESERVED), { { { (1<<MACH_BASE), 0 } } } }  },
 +  { NCPU32K_F_UIMM18, "f-uimm18", 0, 32, 29, 18, { 0, { { { (1<<MACH_BASE), 0 } } } }  },
 +  { NCPU32K_F_RES_IMM2, "f-res-imm2", 0, 32, 31, 2, { 0|A(RESERVED), { { { (1<<MACH_BASE), 0 } } } }  },
-+  { NCPU32K_F_REL20, "f-rel20", 0, 32, 31, 20, { 0|A(PCREL_ADDR), { { { (1<<MACH_BASE), 0 } } } }  },
++  { NCPU32K_F_REL26, "f-rel26", 0, 32, 31, 26, { 0|A(PCREL_ADDR), { { { (1<<MACH_BASE), 0 } } } }  },
 +  { 0, 0, 0, 0, 0, 0, { 0, { { { (1<<MACH_BASE), 0 } } } } }
 +};
 +
@@ -5985,9 +5998,9 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +  { "uimm18", NCPU32K_OPERAND_UIMM18, HW_H_UIMM18, 29, 18,
 +    { 0, { (const PTR) &ncpu32k_cgen_ifld_table[NCPU32K_F_UIMM18] } },
 +    { 0, { { { (1<<MACH_BASE), 0 } } } }  },
-+/* rel20: pc-rel 20 bit address */
-+  { "rel20", NCPU32K_OPERAND_REL20, HW_H_IADDR, 31, 20,
-+    { 0, { (const PTR) &ncpu32k_cgen_ifld_table[NCPU32K_F_REL20] } },
++/* rel26: pc-rel 26 bit address */
++  { "rel26", NCPU32K_OPERAND_REL26, HW_H_IADDR, 31, 26,
++    { 0, { (const PTR) &ncpu32k_cgen_ifld_table[NCPU32K_F_REL26] } },
 +    { 0|A(PCREL_ADDR), { { { (1<<MACH_BASE), 0 } } } }  },
 +/* msr-psr-cc: PSR Condition bit */
 +  { "msr-psr-cc", NCPU32K_OPERAND_MSR_PSR_CC, HW_H_PSB_PSR_CC, 0, 0,
@@ -6178,17 +6191,22 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +    NCPU32K_INSN_JMP, "jmp", "jmp", 32,
 +    { 0|A(UNCOND_CTI)|A(DELAY_SLOT), { { { (1<<MACH_BASE), 0 } } } }
 +  },
-+/* jmp $rd,${rel20} */
++/* jmp r0,${rel26} */
 +  {
 +    NCPU32K_INSN_JMP_I, "jmp.i", "jmp", 32,
 +    { 0|A(UNCOND_CTI)|A(DELAY_SLOT), { { { (1<<MACH_BASE), 0 } } } }
 +  },
-+/* bt ${rel20} */
++/* jmp lnk,${rel26} */
++  {
++    NCPU32K_INSN_JMP_I_LNK, "jmp.i.lnk", "jmp", 32,
++    { 0|A(UNCOND_CTI)|A(DELAY_SLOT), { { { (1<<MACH_BASE), 0 } } } }
++  },
++/* bt ${rel26} */
 +  {
 +    NCPU32K_INSN_BT, "bt", "bt", 32,
 +    { 0|A(COND_CTI)|A(DELAY_SLOT), { { { (1<<MACH_BASE), 0 } } } }
 +  },
-+/* bf ${rel20} */
++/* bf ${rel26} */
 +  {
 +    NCPU32K_INSN_BF, "bf", "bf", 32,
 +    { 0|A(COND_CTI)|A(DELAY_SLOT), { { { (1<<MACH_BASE), 0 } } } }
@@ -6609,7 +6627,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +
 diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutils-2.32/opcodes/ncpu32k-desc.h binutils-ncpu32k-2.32/opcodes/ncpu32k-desc.h
 --- binutils-2.32/opcodes/ncpu32k-desc.h	1970-01-01 08:00:00.000000000 +0800
-+++ binutils-ncpu32k-2.32/opcodes/ncpu32k-desc.h	2020-01-22 16:20:16.163950951 +0800
++++ binutils-ncpu32k-2.32/opcodes/ncpu32k-desc.h	2020-01-30 15:59:04.811706399 +0800
 @@ -0,0 +1,299 @@
 +/* DO NOT EDIT!  -*- buffer-read-only: t -*- vi:set ro:  */
 +/* CPU data header for ncpu32k.
@@ -6728,13 +6746,13 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 + , OPC_CMP = 12, OPC_BT = 13, OPC_BF = 14, OPC_LDWU = 15
 + , OPC_STW = 16, OPC_MBARR = 17, OPC_SYSCALL = 18, OPC_RET = 19
 + , OPC_WMSR = 20, OPC_RMSR = 21, OPC_VENTER = 22, OPC_VLEAVE = 23
-+ , OPC_ASR = 26, OPC_ASR_I = 27, OPC_ADD = 28, OPC_ADD_I = 29
-+ , OPC_SUB = 30, OPC_MUL = 31, OPC_DIV = 32, OPC_DIVU = 33
-+ , OPC_MOD = 34, OPC_MODU = 35, OPC_LDB = 36, OPC_LDBU = 37
-+ , OPC_LDH = 38, OPC_LDHU = 39, OPC_STB = 40, OPC_STH = 41
-+ , OPC_MHI = 42, OPC_FADDS = 43, OPC_FSUBS = 44, OPC_FMULS = 45
-+ , OPC_FDIVS = 46, OPC_FCMPS = 47, OPC_FITFS = 48, OPC_FFTIS = 49
-+ , OPC_LDWA = 50, OPC_STWA = 51
++ , OPC_JMP_I_LNK = 24, OPC_ASR = 26, OPC_ASR_I = 27, OPC_ADD = 28
++ , OPC_ADD_I = 29, OPC_SUB = 30, OPC_MUL = 31, OPC_DIV = 32
++ , OPC_DIVU = 33, OPC_MOD = 34, OPC_MODU = 35, OPC_LDB = 36
++ , OPC_LDBU = 37, OPC_LDH = 38, OPC_LDHU = 39, OPC_STB = 40
++ , OPC_STH = 41, OPC_MHI = 42, OPC_FADDS = 43, OPC_FSUBS = 44
++ , OPC_FMULS = 45, OPC_FDIVS = 46, OPC_FCMPS = 47, OPC_FITFS = 48
++ , OPC_FFTIS = 49, OPC_LDWA = 50, OPC_STWA = 51
 +} INSN_OPCODE;
 +
 +/* Attributes.  */
@@ -6781,7 +6799,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +  NCPU32K_F_NIL, NCPU32K_F_ANYOF, NCPU32K_F_OPCODE, NCPU32K_F_RD
 + , NCPU32K_F_RES_RD, NCPU32K_F_RS1, NCPU32K_F_RES_RS1, NCPU32K_F_RS2
 + , NCPU32K_F_RES_RS2, NCPU32K_F_RES_ATTR, NCPU32K_F_UIMM14, NCPU32K_F_SIMM14
-+ , NCPU32K_F_RES_IMM14, NCPU32K_F_UIMM18, NCPU32K_F_RES_IMM2, NCPU32K_F_REL20
++ , NCPU32K_F_RES_IMM14, NCPU32K_F_UIMM18, NCPU32K_F_RES_IMM2, NCPU32K_F_REL26
 + , NCPU32K_F_MAX
 +} IFIELD_TYPE;
 +
@@ -6846,7 +6864,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +/* Enum declaration for ncpu32k operand types.  */
 +typedef enum cgen_operand_type {
 +  NCPU32K_OPERAND_PC, NCPU32K_OPERAND_RS1, NCPU32K_OPERAND_RS2, NCPU32K_OPERAND_RD
-+ , NCPU32K_OPERAND_SIMM14, NCPU32K_OPERAND_UIMM14, NCPU32K_OPERAND_UIMM18, NCPU32K_OPERAND_REL20
++ , NCPU32K_OPERAND_SIMM14, NCPU32K_OPERAND_UIMM14, NCPU32K_OPERAND_UIMM18, NCPU32K_OPERAND_REL26
 + , NCPU32K_OPERAND_MSR_PSR_CC, NCPU32K_OPERAND_MSR_PSR_CY, NCPU32K_OPERAND_MSR_PSR_OV, NCPU32K_OPERAND_MSR_PSR_OE
 + , NCPU32K_OPERAND_ATOMIC_FLAG, NCPU32K_OPERAND_ATOMIC_ADDR, NCPU32K_OPERAND_MAX
 +} CGEN_OPERAND_TYPE;
@@ -6912,7 +6930,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +#endif /* NCPU32K_CPU_H */
 diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutils-2.32/opcodes/ncpu32k-dis.c binutils-ncpu32k-2.32/opcodes/ncpu32k-dis.c
 --- binutils-2.32/opcodes/ncpu32k-dis.c	1970-01-01 08:00:00.000000000 +0800
-+++ binutils-ncpu32k-2.32/opcodes/ncpu32k-dis.c	2020-01-15 14:29:29.616087033 +0800
++++ binutils-ncpu32k-2.32/opcodes/ncpu32k-dis.c	2020-01-30 15:59:04.887706395 +0800
 @@ -0,0 +1,538 @@
 +/* DO NOT EDIT!  -*- buffer-read-only: t -*- vi:set ro:  */
 +/* Disassembler interface for targets using CGEN. -*- C -*-
@@ -7009,8 +7027,8 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +    case NCPU32K_OPERAND_RD :
 +      print_keyword (cd, info, & ncpu32k_cgen_opval_h_gpr, fields->f_rd, 0);
 +      break;
-+    case NCPU32K_OPERAND_REL20 :
-+      print_address (cd, info, fields->f_rel20, 0|(1<<CGEN_OPERAND_PCREL_ADDR), pc, length);
++    case NCPU32K_OPERAND_REL26 :
++      print_address (cd, info, fields->f_rel26, 0|(1<<CGEN_OPERAND_PCREL_ADDR), pc, length);
 +      break;
 +    case NCPU32K_OPERAND_RS1 :
 +      print_keyword (cd, info, & ncpu32k_cgen_opval_h_gpr, fields->f_rs1, 0);
@@ -7454,7 +7472,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +}
 diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutils-2.32/opcodes/ncpu32k-ibld.c binutils-ncpu32k-2.32/opcodes/ncpu32k-ibld.c
 --- binutils-2.32/opcodes/ncpu32k-ibld.c	1970-01-01 08:00:00.000000000 +0800
-+++ binutils-ncpu32k-2.32/opcodes/ncpu32k-ibld.c	2020-01-15 14:29:29.608087033 +0800
++++ binutils-ncpu32k-2.32/opcodes/ncpu32k-ibld.c	2020-01-30 15:59:04.867706396 +0800
 @@ -0,0 +1,880 @@
 +/* DO NOT EDIT!  -*- buffer-read-only: t -*- vi:set ro:  */
 +/* Instruction building/extraction support for ncpu32k. -*- C -*-
@@ -8034,11 +8052,11 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +    case NCPU32K_OPERAND_RD :
 +      errmsg = insert_normal (cd, fields->f_rd, 0, 0, 11, 6, 32, total_length, buffer);
 +      break;
-+    case NCPU32K_OPERAND_REL20 :
++    case NCPU32K_OPERAND_REL26 :
 +      {
-+        long value = fields->f_rel20;
++        long value = fields->f_rel26;
 +        value = ((SI) (((value) - (pc))) >> (2));
-+        errmsg = insert_normal (cd, value, 0|(1<<CGEN_IFLD_SIGNED)|(1<<CGEN_IFLD_PCREL_ADDR), 0, 31, 20, 32, total_length, buffer);
++        errmsg = insert_normal (cd, value, 0|(1<<CGEN_IFLD_SIGNED)|(1<<CGEN_IFLD_PCREL_ADDR), 0, 31, 26, 32, total_length, buffer);
 +      }
 +      break;
 +    case NCPU32K_OPERAND_RS1 :
@@ -8102,12 +8120,12 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +    case NCPU32K_OPERAND_RD :
 +      length = extract_normal (cd, ex_info, insn_value, 0, 0, 11, 6, 32, total_length, pc, & fields->f_rd);
 +      break;
-+    case NCPU32K_OPERAND_REL20 :
++    case NCPU32K_OPERAND_REL26 :
 +      {
 +        long value;
-+        length = extract_normal (cd, ex_info, insn_value, 0|(1<<CGEN_IFLD_SIGNED)|(1<<CGEN_IFLD_PCREL_ADDR), 0, 31, 20, 32, total_length, pc, & value);
++        length = extract_normal (cd, ex_info, insn_value, 0|(1<<CGEN_IFLD_SIGNED)|(1<<CGEN_IFLD_PCREL_ADDR), 0, 31, 26, 32, total_length, pc, & value);
 +        value = ((((value) << (2))) + (pc));
-+        fields->f_rel20 = value;
++        fields->f_rel26 = value;
 +      }
 +      break;
 +    case NCPU32K_OPERAND_RS1 :
@@ -8166,8 +8184,8 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +    case NCPU32K_OPERAND_RD :
 +      value = fields->f_rd;
 +      break;
-+    case NCPU32K_OPERAND_REL20 :
-+      value = fields->f_rel20;
++    case NCPU32K_OPERAND_REL26 :
++      value = fields->f_rel26;
 +      break;
 +    case NCPU32K_OPERAND_RS1 :
 +      value = fields->f_rs1;
@@ -8207,8 +8225,8 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +    case NCPU32K_OPERAND_RD :
 +      value = fields->f_rd;
 +      break;
-+    case NCPU32K_OPERAND_REL20 :
-+      value = fields->f_rel20;
++    case NCPU32K_OPERAND_REL26 :
++      value = fields->f_rel26;
 +      break;
 +    case NCPU32K_OPERAND_RS1 :
 +      value = fields->f_rs1;
@@ -8255,8 +8273,8 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +    case NCPU32K_OPERAND_RD :
 +      fields->f_rd = value;
 +      break;
-+    case NCPU32K_OPERAND_REL20 :
-+      fields->f_rel20 = value;
++    case NCPU32K_OPERAND_REL26 :
++      fields->f_rel26 = value;
 +      break;
 +    case NCPU32K_OPERAND_RS1 :
 +      fields->f_rs1 = value;
@@ -8293,8 +8311,8 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +    case NCPU32K_OPERAND_RD :
 +      fields->f_rd = value;
 +      break;
-+    case NCPU32K_OPERAND_REL20 :
-+      fields->f_rel20 = value;
++    case NCPU32K_OPERAND_REL26 :
++      fields->f_rel26 = value;
 +      break;
 +    case NCPU32K_OPERAND_RS1 :
 +      fields->f_rs1 = value;
@@ -8338,8 +8356,8 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +}
 diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutils-2.32/opcodes/ncpu32k-opc.c binutils-ncpu32k-2.32/opcodes/ncpu32k-opc.c
 --- binutils-2.32/opcodes/ncpu32k-opc.c	1970-01-01 08:00:00.000000000 +0800
-+++ binutils-ncpu32k-2.32/opcodes/ncpu32k-opc.c	2020-01-22 16:20:16.195950949 +0800
-@@ -0,0 +1,540 @@
++++ binutils-ncpu32k-2.32/opcodes/ncpu32k-opc.c	2020-01-30 16:01:41.871697563 +0800
+@@ -0,0 +1,542 @@
 +/* DO NOT EDIT!  -*- buffer-read-only: t -*- vi:set ro:  */
 +/* Instruction opcode table for ncpu32k.
 +
@@ -8419,11 +8437,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +};
 +
 +static const CGEN_IFMT ifmt_jmp_i ATTRIBUTE_UNUSED = {
-+  32, 32, 0x3f, { { F (F_REL20) }, { F (F_RD) }, { F (F_OPCODE) }, { 0 } }
-+};
-+
-+static const CGEN_IFMT ifmt_bt ATTRIBUTE_UNUSED = {
-+  32, 32, 0xfff, { { F (F_REL20) }, { F (F_RES_RD) }, { F (F_OPCODE) }, { 0 } }
++  32, 32, 0x3f, { { F (F_REL26) }, { F (F_OPCODE) }, { 0 } }
 +};
 +
 +static const CGEN_IFMT ifmt_syscall ATTRIBUTE_UNUSED = {
@@ -8623,23 +8637,29 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +    { { MNEM, ' ', OP (RD), ',', OP (RS1), 0 } },
 +    & ifmt_mov, { 0xa }
 +  },
-+/* jmp $rd,${rel20} */
++/* jmp r0,${rel26} */
 +  {
 +    { 0, 0, 0, 0 },
-+    { { MNEM, ' ', OP (RD), ',', OP (REL20), 0 } },
++    { { MNEM, ' ', 'r', '0', ',', OP (REL26), 0 } },
 +    & ifmt_jmp_i, { 0xb }
 +  },
-+/* bt ${rel20} */
++/* jmp lnk,${rel26} */
 +  {
 +    { 0, 0, 0, 0 },
-+    { { MNEM, ' ', OP (REL20), 0 } },
-+    & ifmt_bt, { 0xd }
++    { { MNEM, ' ', 'l', 'n', 'k', ',', OP (REL26), 0 } },
++    & ifmt_jmp_i, { 0x18 }
 +  },
-+/* bf ${rel20} */
++/* bt ${rel26} */
 +  {
 +    { 0, 0, 0, 0 },
-+    { { MNEM, ' ', OP (REL20), 0 } },
-+    & ifmt_bt, { 0xe }
++    { { MNEM, ' ', OP (REL26), 0 } },
++    & ifmt_jmp_i, { 0xd }
++  },
++/* bf ${rel26} */
++  {
++    { 0, 0, 0, 0 },
++    { { MNEM, ' ', OP (REL26), 0 } },
++    & ifmt_jmp_i, { 0xe }
 +  },
 +/* ldb $rd,${simm14}($rs1) */
 +  {
@@ -8882,7 +8902,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +}
 diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutils-2.32/opcodes/ncpu32k-opc.h binutils-ncpu32k-2.32/opcodes/ncpu32k-opc.h
 --- binutils-2.32/opcodes/ncpu32k-opc.h	1970-01-01 08:00:00.000000000 +0800
-+++ binutils-ncpu32k-2.32/opcodes/ncpu32k-opc.h	2020-01-22 16:20:16.187950950 +0800
++++ binutils-ncpu32k-2.32/opcodes/ncpu32k-opc.h	2020-01-30 15:59:04.835706398 +0800
 @@ -0,0 +1,103 @@
 +/* DO NOT EDIT!  -*- buffer-read-only: t -*- vi:set ro:  */
 +/* Instruction opcode header for ncpu32k.
@@ -8933,11 +8953,11 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 + , NCPU32K_INSN_ADD_I, NCPU32K_INSN_SUB, NCPU32K_INSN_MUL, NCPU32K_INSN_DIV
 + , NCPU32K_INSN_DIVU, NCPU32K_INSN_MOD, NCPU32K_INSN_MODU, NCPU32K_INSN_MHI
 + , NCPU32K_INSN_RMSR, NCPU32K_INSN_WMSR, NCPU32K_INSN_CMPEQ, NCPU32K_INSN_CMPGT
-+ , NCPU32K_INSN_CMP, NCPU32K_INSN_JMP, NCPU32K_INSN_JMP_I, NCPU32K_INSN_BT
-+ , NCPU32K_INSN_BF, NCPU32K_INSN_LDB, NCPU32K_INSN_LDBU, NCPU32K_INSN_LDH
-+ , NCPU32K_INSN_LDHU, NCPU32K_INSN_LDW, NCPU32K_INSN_LDWU, NCPU32K_INSN_STB
-+ , NCPU32K_INSN_STH, NCPU32K_INSN_STW, NCPU32K_INSN_SYSCALL, NCPU32K_INSN_RET
-+ , NCPU32K_INSN_MBARR, NCPU32K_INSN_LDWA, NCPU32K_INSN_STWA
++ , NCPU32K_INSN_CMP, NCPU32K_INSN_JMP, NCPU32K_INSN_JMP_I, NCPU32K_INSN_JMP_I_LNK
++ , NCPU32K_INSN_BT, NCPU32K_INSN_BF, NCPU32K_INSN_LDB, NCPU32K_INSN_LDBU
++ , NCPU32K_INSN_LDH, NCPU32K_INSN_LDHU, NCPU32K_INSN_LDW, NCPU32K_INSN_LDWU
++ , NCPU32K_INSN_STB, NCPU32K_INSN_STH, NCPU32K_INSN_STW, NCPU32K_INSN_SYSCALL
++ , NCPU32K_INSN_RET, NCPU32K_INSN_MBARR, NCPU32K_INSN_LDWA, NCPU32K_INSN_STWA
 +} CGEN_INSN_TYPE;
 +
 +/* Index of `invalid' insn place holder.  */
@@ -8965,7 +8985,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +  long f_res_imm14;
 +  long f_uimm18;
 +  long f_res_imm2;
-+  long f_rel20;
++  long f_rel26;
 +};
 +
 +#define CGEN_INIT_PARSE(od) \
@@ -8989,8 +9009,8 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +#endif /* NCPU32K_OPC_H */
 diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutils-2.32/opcodes/ncpu32k-opinst.c binutils-ncpu32k-2.32/opcodes/ncpu32k-opinst.c
 --- binutils-2.32/opcodes/ncpu32k-opinst.c	1970-01-01 08:00:00.000000000 +0800
-+++ binutils-ncpu32k-2.32/opcodes/ncpu32k-opinst.c	2020-01-22 16:20:16.199950949 +0800
-@@ -0,0 +1,325 @@
++++ binutils-ncpu32k-2.32/opcodes/ncpu32k-opinst.c	2020-01-30 15:59:04.855706397 +0800
+@@ -0,0 +1,331 @@
 +/* DO NOT EDIT!  -*- buffer-read-only: t -*- vi:set ro:  */
 +/* Semantic operand instances for ncpu32k.
 +
@@ -9132,17 +9152,22 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +};
 +
 +static const CGEN_OPINST sfmt_jmp_i_ops[] ATTRIBUTE_UNUSED = {
++  { INPUT, "rel26", HW_H_IADDR, CGEN_MODE_USI, OP_ENT (REL26), 0, 0 },
++  { OUTPUT, "pc", HW_H_PC, CGEN_MODE_USI, 0, 0, 0 },
++  { END, (const char *)0, (enum cgen_hw_type)0, (enum cgen_mode)0, (enum cgen_operand_type)0, 0, 0 }
++};
++
++static const CGEN_OPINST sfmt_jmp_i_lnk_ops[] ATTRIBUTE_UNUSED = {
 +  { INPUT, "pc", HW_H_PC, CGEN_MODE_USI, 0, 0, 0 },
-+  { INPUT, "rd", HW_H_GPR, CGEN_MODE_USI, OP_ENT (RD), 0, 0 },
-+  { INPUT, "rel20", HW_H_IADDR, CGEN_MODE_USI, OP_ENT (REL20), 0, 0 },
-+  { OUTPUT, "h_gpr_USI_rd", HW_H_GPR, CGEN_MODE_USI, 0, 0, 0 },
++  { INPUT, "rel26", HW_H_IADDR, CGEN_MODE_USI, OP_ENT (REL26), 0, 0 },
++  { OUTPUT, "h_gpr_USI_1", HW_H_GPR, CGEN_MODE_USI, 0, 1, 0 },
 +  { OUTPUT, "pc", HW_H_PC, CGEN_MODE_USI, 0, 0, 0 },
 +  { END, (const char *)0, (enum cgen_hw_type)0, (enum cgen_mode)0, (enum cgen_operand_type)0, 0, 0 }
 +};
 +
 +static const CGEN_OPINST sfmt_bt_ops[] ATTRIBUTE_UNUSED = {
 +  { INPUT, "msr_psr_cc", HW_H_PSB_PSR_CC, CGEN_MODE_USI, 0, 0, 0 },
-+  { INPUT, "rel20", HW_H_IADDR, CGEN_MODE_USI, OP_ENT (REL20), 0, COND_REF },
++  { INPUT, "rel26", HW_H_IADDR, CGEN_MODE_USI, OP_ENT (REL26), 0, COND_REF },
 +  { OUTPUT, "pc", HW_H_PC, CGEN_MODE_USI, 0, 0, COND_REF },
 +  { END, (const char *)0, (enum cgen_hw_type)0, (enum cgen_mode)0, (enum cgen_operand_type)0, 0, 0 }
 +};
@@ -9287,6 +9312,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +  & sfmt_cmpeq_ops[0],
 +  & sfmt_jmp_ops[0],
 +  & sfmt_jmp_i_ops[0],
++  & sfmt_jmp_i_lnk_ops[0],
 +  & sfmt_bt_ops[0],
 +  & sfmt_bt_ops[0],
 +  & sfmt_ldb_ops[0],
