@@ -120,8 +120,8 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +struct gcc_targetm_common targetm_common = TARGETM_COMMON_INITIALIZER;
 diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/config/ncpu32k/constraints.md gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/constraints.md
 --- gcc-5.4.0/gcc/config/ncpu32k/constraints.md	1970-01-01 08:00:00.000000000 +0800
-+++ gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/constraints.md	2020-01-16 10:55:05.896468388 +0800
-@@ -0,0 +1,45 @@
++++ gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/constraints.md	2020-02-03 18:39:58.653029097 +0800
+@@ -0,0 +1,44 @@
 +;; Constraint definitions for nano-cpu32k
 +;; Copyright (C) 2019 Free Software Foundation, Inc.
 +;;
@@ -165,7 +165,6 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +  "32-bit Integer that is aligned at LSB-14bit boundary."
 +  (and (match_code "const_int")
 +       (match_test "(ival & 0x3fff) == 0")))
-+
 +
 diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/config/ncpu32k/elf.h gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/elf.h
 --- gcc-5.4.0/gcc/config/ncpu32k/elf.h	1970-01-01 08:00:00.000000000 +0800
@@ -341,8 +340,8 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +#define CLEAR_INSN_CACHE(BEG, END) /* Do something here !!! */
 diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/config/ncpu32k/ncpu32k.c gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.c
 --- gcc-5.4.0/gcc/config/ncpu32k/ncpu32k.c	1970-01-01 08:00:00.000000000 +0800
-+++ gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.c	2020-01-30 16:29:54.247602351 +0800
-@@ -0,0 +1,2288 @@
++++ gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.c	2020-02-03 16:22:59.777491487 +0800
+@@ -0,0 +1,2326 @@
 +/* Subroutines for insn-output.c for GNU compiler.  nano-cpu32k version.
 +   Copyright (C) 2019 Free Software Foundation, Inc
 +   largely based on ../or1k/or1k.c
@@ -512,8 +511,6 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +  return (frame_info.mask & ((HOST_WIDE_INT) 1 << regno)) != 0;
 +}
 +
-+/* N.B. contrary to the ISA documentation, the stack includes the outgoing
-+   arguments.  */
 +/**
 + * Compute full frame size and layout.
 + * Store information in "frame_info".
@@ -1784,6 +1781,46 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +       */
 +      emit_insn (gen_movsi_insn_big (op0, op1));
 +    }
++}
++
++void
++ncpu32k_emit_set_const16 (rtx  op0,
++		       rtx  op1)
++{
++  enum machine_mode mode = GET_MODE (op0);
++  rtx temp;
++  
++  /* Sanity check that we are setting a const */
++  if (GET_CODE (op1) != CONST_INT)
++    {
++      abort ();
++    }
++  /* Sanity check that we really can't do it in one instruction. I.e that we
++     don't have a 14-bit constant. */
++  HOST_WIDE_INT val = INTVAL (op1) & GET_MODE_MASK (mode);
++
++  if ((CONST_INT_I_MIN <= val) && (val <= CONST_INT_I_MAX))
++    {
++      abort ();
++    }
++
++  /* Full 2-insn decomposition is needed.  */
++  if (reload_in_progress || reload_completed)
++    temp = op0;
++  else
++    temp = gen_reg_rtx (mode);
++
++  /* Emit them as real moves instead of a HIGH/LO_SUM,
++   this way CSE can see everything and reuse intermediate
++   values if it wants.  */
++  emit_insn (gen_rtx_SET (VOIDmode, temp,
++  		      GEN_INT (INTVAL (op1)
++  			       & ~(HOST_WIDE_INT) 0x3fff)));
++
++  emit_insn (gen_rtx_SET (VOIDmode,
++  		      op0,
++  		      gen_rtx_IOR (mode, temp,
++  				   GEN_INT (INTVAL (op1) & 0x3fff))));
 +}
 +
 +
@@ -3776,8 +3813,8 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +
 diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/config/ncpu32k/ncpu32k.md gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.md
 --- gcc-5.4.0/gcc/config/ncpu32k/ncpu32k.md	1970-01-01 08:00:00.000000000 +0800
-+++ gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.md	2020-01-28 22:39:31.366860710 +0800
-@@ -0,0 +1,1363 @@
++++ gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.md	2020-02-03 19:05:04.344944388 +0800
+@@ -0,0 +1,1383 @@
 +;; Machine description for GNU compiler, nano-cpu32k ISA
 +;; Copyright (C) 2019 Free Software Foundation, Inc.
 +;;
@@ -3949,7 +3986,7 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +        }
 +")
 +
-+(define_insn "*movqi_internal"
++(define_insn "*movqi_insn"
 +  [(set (match_operand:QI 0 "nonimmediate_operand" "=m,r,r,r,r")
 +	(match_operand:QI 1 "general_operand"       "r,r,I,K,m"))]
 +  ""
@@ -3958,7 +3995,7 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +   or \t%0,%1,0\t# movqi: r
 +   add \t%0,r0,%1\t# movqi: I
 +   or \t%0,r0,%1\t# movqi: K
-+   ldbu \t%0,%1\t# movqi: M"
++   ldbu \t%0,%1\t# movqi: m"
 +  [(set_attr "type" "store,logic,move,logic,load")])
 +
 +
@@ -3992,19 +4029,43 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +          if (GET_CODE (operands[0]) != REG)
 +	    operands[1] = force_reg (HImode, operands[1]);
 +        }
++        
++      if (! CONSTANT_P (operands[1]) || input_operand (operands[1], HImode))
++        ;
++      else if (CONSTANT_P (operands[1])
++           && GET_CODE (operands[1]) != HIGH
++           && GET_CODE (operands[1]) != LO_SUM)
++      {
++        ncpu32k_emit_set_const16 (operands[0], operands[1]);
++        DONE;
++      }
 +")
 +
-+(define_insn "*movhi_internal"
-+  [(set (match_operand:HI 0 "nonimmediate_operand" "=m,r,r,r,r")
-+	(match_operand:HI 1 "general_operand"       "r,r,I,K,m"))]
++(define_insn "*movhi_insn"
++  [(set (match_operand:HI 0 "nonimmediate_operand" "=m,r,r,r,r,r")
++	(match_operand:HI 1 "general_operand"       "r,r,I,K,m,M"))]
 +  ""
 +  "@
-+   sth \t%0,%1\t# movhi: r
-+   or \t%0,%1,0\t# movhi: r
-+   add \t%0,r0,%1\t# movhi: I
-+   or \t%0,r0,%1\t# movhi: K
-+   ldhu \t%0,%1\t# movhi: m"
-+  [(set_attr "type" "store,logic,move,logic,load")])
++   sth \t%0,%1\t# movHI: r
++   or \t%0,%1,0\t# movHI: r
++   add \t%0,r0,%1\t# movHI: I
++   or \t%0,r0,%1\t# movHI: K
++   ldhu \t%0,%1\t# movHI: m
++   mhi \t%0,hi(%1)\t# movHI: M"
++  [(set_attr "type" "store,logic,move,logic,load,move")])
++
++(define_insn "*movhi_iorhi3"
++  [(set (match_operand:HI 0 "register_operand" "=r")
++	(ior:HI (match_operand:HI 1 "register_operand" "%r")
++		(match_operand:HI 2 "nonmemory_operand" "K")))]
++  ""
++  "or \t%0,%1,%2\t# movHI_iorhi3: K"
++  [(set_attr "type" "logic")
++   (set_attr "length" "1")])
++
++;;***************************************************************************
++;; movSI
++;;***************************************************************************
 +
 +(define_expand "movsi"
 +  [(set (match_operand:SI 0 "general_operand" "")
@@ -4013,10 +4074,6 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +{
 +  if (ncpu32k_expand_move (SImode, operands)) DONE;
 +})
-+
-+;;***************************************************************************
-+;; movSI
-+;;***************************************************************************
 +
 +(define_insn "*movsi_insn"
 +  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r,r,r,m")
@@ -5264,8 +5321,8 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +#endif
 diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/config/ncpu32k/ncpu32k-protos.h gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k-protos.h
 --- gcc-5.4.0/gcc/config/ncpu32k/ncpu32k-protos.h	1970-01-01 08:00:00.000000000 +0800
-+++ gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k-protos.h	2019-09-29 15:43:43.381693109 +0800
-@@ -0,0 +1,68 @@
++++ gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k-protos.h	2020-02-03 16:24:10.789487492 +0800
+@@ -0,0 +1,70 @@
 +/* Definitions of target machine for GNU compiler, nano-cpu32k version.
 +
 +   Copyright (C) 2019 Free Software Foundation, Inc
@@ -5308,6 +5365,8 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +               rtx  true_cond,
 +               rtx  false_cond);
 +extern void        ncpu32k_emit_set_const32 (rtx  op0,
++                                          rtx  op1);
++extern void        ncpu32k_emit_set_const16 (rtx  op0,
 +                                          rtx  op1);
 +extern bool        ncpu32k_expand_symbol_ref (enum machine_mode mode,
 +                                           rtx operands[]);
