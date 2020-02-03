@@ -5615,10 +5615,8 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
  	.section ".tdata","awT",@progbits'
 diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/libgcc/config/ncpu32k/crti.S gcc-ncpu32k-5.4.0/libgcc/config/ncpu32k/crti.S
 --- gcc-5.4.0/libgcc/config/ncpu32k/crti.S	1970-01-01 08:00:00.000000000 +0800
-+++ gcc-ncpu32k-5.4.0/libgcc/config/ncpu32k/crti.S	2019-09-29 19:49:45.146059134 +0800
-@@ -0,0 +1,16 @@
-+#include "ncpu32k-asm.inc"
-+
++++ gcc-ncpu32k-5.4.0/libgcc/config/ncpu32k/crti.S	2020-02-03 20:12:53.488715460 +0800
+@@ -0,0 +1,14 @@
 +# Start .init and .fini sections.
 +.section .init
 +.global	_init
@@ -5635,10 +5633,8 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/libgc
 +
 diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/libgcc/config/ncpu32k/crtn.S gcc-ncpu32k-5.4.0/libgcc/config/ncpu32k/crtn.S
 --- gcc-5.4.0/libgcc/config/ncpu32k/crtn.S	1970-01-01 08:00:00.000000000 +0800
-+++ gcc-ncpu32k-5.4.0/libgcc/config/ncpu32k/crtn.S	2020-01-17 10:50:04.863638251 +0800
-@@ -0,0 +1,14 @@
-+#include "ncpu32k-asm.inc"
-+
++++ gcc-ncpu32k-5.4.0/libgcc/config/ncpu32k/crtn.S	2020-02-03 20:12:58.744715164 +0800
+@@ -0,0 +1,12 @@
 +# End .init and .fini sections.
 +
 +.section .init
@@ -5751,20 +5747,10 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/libgc
 +}
 +
 +#endif /* ifdef inhibit_libc  */
-diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/libgcc/config/ncpu32k/ncpu32k-asm.inc gcc-ncpu32k-5.4.0/libgcc/config/ncpu32k/ncpu32k-asm.inc
---- gcc-5.4.0/libgcc/config/ncpu32k/ncpu32k-asm.inc	1970-01-01 08:00:00.000000000 +0800
-+++ gcc-ncpu32k-5.4.0/libgcc/config/ncpu32k/ncpu32k-asm.inc	2019-09-29 19:55:09.986067189 +0800
-@@ -0,0 +1,4 @@
-+#ifndef NCPU32K_ASM_H
-+#define NCPU32K_ASM_H
-+
-+#endif /* NCPU32K */
 diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/libgcc/config/ncpu32k/ncpu32k.S gcc-ncpu32k-5.4.0/libgcc/config/ncpu32k/ncpu32k.S
 --- gcc-5.4.0/libgcc/config/ncpu32k/ncpu32k.S	1970-01-01 08:00:00.000000000 +0800
-+++ gcc-ncpu32k-5.4.0/libgcc/config/ncpu32k/ncpu32k.S	2020-01-16 18:10:39.282902698 +0800
-@@ -0,0 +1,198 @@
-+#include "ncpu32k-asm.inc"
-+
++++ gcc-ncpu32k-5.4.0/libgcc/config/ncpu32k/ncpu32k.S	2020-02-03 20:17:29.184699949 +0800
+@@ -0,0 +1,196 @@
 +#define ENTRY(symbol)	\
 +	.align 4	;\
 +	.global symbol	;\
@@ -5862,18 +5848,18 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/libgc
 +	add          lnk,lnk,1
 +	cmp          r13,gtu,lnk
 +	bt 3b
-+	jmp nil, 4f
++	jmp r0, 4f
 +
 +6:
 +	add          rv,nil,1
-+	jmp nil, 4f
++	jmp r0, 4f
 +
 +5:
 +	add          v4,v2,0
 +4:
 +	ldwu         lnk,0(sp)
 +	add          sp,sp,4
-+	jmp nil, lnk
++	jmp r0, lnk
 +
 +.size __udivsi3,.-__udivsi3
 +#endif
@@ -6034,10 +6020,10 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/libgc
 +EXTRA_MULTILIB_PARTS = crti.o crtbegin.o crtend.o crtn.o
 diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/libgcc/config/ncpu32k/t-ncpu32k gcc-ncpu32k-5.4.0/libgcc/config/ncpu32k/t-ncpu32k
 --- gcc-5.4.0/libgcc/config/ncpu32k/t-ncpu32k	1970-01-01 08:00:00.000000000 +0800
-+++ gcc-ncpu32k-5.4.0/libgcc/config/ncpu32k/t-ncpu32k	2019-09-29 19:56:05.262068559 +0800
++++ gcc-ncpu32k-5.4.0/libgcc/config/ncpu32k/t-ncpu32k	2020-02-03 20:10:48.996722464 +0800
 @@ -0,0 +1,2 @@
 +LIB1ASMSRC = ncpu32k/ncpu32k.S
-+LIB1ASMFUNCS =
++LIB1ASMFUNCS = __mulsi3 __udivsi3 __divsi3 __umodsi3 __modsi3
 diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/libgcc/config.host gcc-ncpu32k-5.4.0/libgcc/config.host
 --- gcc-5.4.0/libgcc/config.host	2019-09-21 15:11:25.950036765 +0800
 +++ gcc-ncpu32k-5.4.0/libgcc/config.host	2019-09-29 19:48:27.570057211 +0800
