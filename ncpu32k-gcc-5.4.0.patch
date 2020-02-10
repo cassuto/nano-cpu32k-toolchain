@@ -2670,7 +2670,7 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +
 diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/config/ncpu32k/ncpu32k.h gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.h
 --- gcc-5.4.0/gcc/config/ncpu32k/ncpu32k.h	1970-01-01 08:00:00.000000000 +0800
-+++ gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.h	2020-01-28 22:08:12.714915531 +0800
++++ gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.h	2020-02-10 22:59:48.960962102 +0800
 @@ -0,0 +1,1139 @@
 +/* Definitions of target machine for GNU compiler. nano-cpu32k version.
 +   Copyright (C) 2019 Free Software Foundation, Inc.
@@ -2714,23 +2714,23 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +/* Make sure we pick up the crti.o, crtbegin.o, crtend.o and crtn.o files. */
 +#undef STARTFILE_SPEC
 +#define STARTFILE_SPEC \
-+  "%{!shared:%{pie:Scrt0.o%s;:crt0.o%s}} crti.o%s \
++  "crti.o%s \
 +   %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s}"
 +
 +#undef ENDFILE_SPEC
 +#define ENDFILE_SPEC "%{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s"
 +
++/* FIXME check this */
 +#undef LINK_SPEC
 +#define LINK_SPEC "%{mnewlib:-entry 0x100} %{static:-static} %{shared:-shared}"
 +
 +/* Override previous definitions (linux.h). Newlib doesn't have a profiling
 +   version of the library, but it does have a debugging version (libg.a) */
 +#undef LIB_SPEC
-+#define LIB_SPEC "%{!mnewlib:%{pthread:-lpthread}	\
-+		             %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}}"			\
-+                 "%{mnewlib:%{!g:-lc} %{g:-lg} -lncpu32k					\
-+                            %{mboard=*:-lboard-%*} %{!mboard=*:-lboard-ncpu32ksim}		\
-+                            %{!g:-lc} %{g:-lg}						\
++#define LIB_SPEC "%{!mnewlib:%{pthread:-lpthread}				\
++		             %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}}"		\
++                 "%{mnewlib:%{!g:-lc} %{g:-lg}					\
++                            %{!g:-lc} %{g:-lg}					\
 +                            }"
 +
 +/* Target machine storage layout */
@@ -3813,7 +3813,7 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +
 diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/config/ncpu32k/ncpu32k.md gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.md
 --- gcc-5.4.0/gcc/config/ncpu32k/ncpu32k.md	1970-01-01 08:00:00.000000000 +0800
-+++ gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.md	2020-02-03 19:05:04.344944388 +0800
++++ gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.md	2020-02-10 21:27:16.674977896 +0800
 @@ -0,0 +1,1383 @@
 +;; Machine description for GNU compiler, nano-cpu32k ISA
 +;; Copyright (C) 2019 Free Software Foundation, Inc.
@@ -4502,7 +4502,7 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +  [(set (match_operand:SI 0 "register_operand" "=r")
 +        (sign_extend:SI (match_operand:HI 1 "memory_operand" "m")))]
 +  ""
-+  "ldw \t%0,%1\t# extendhisi2_ext_mem"
++  "ldh \t%0,%1\t# extendhisi2_ext_mem"
 +  [(set_attr "length" "1")
 +   (set_attr "type" "load")])
 +
@@ -4540,8 +4540,8 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +	(zero_extend:SI (match_operand:HI 1 "nonimmediate_operand" "r,m")))]
 +  ""
 +  "@
-+   and \t%0,%1,0x3fff\t# zero_extendqisi2
-+   ldhu \t%0,%1\t# zero_extendqisi2"
++   lsl \t%0,%1,16\t# zero_extendhisi2_reg\;lsr \t%0,%0,16\t# zero_extendhisi2_reg
++   ldhu \t%0,%1\t# zero_extendhisi2"
 +  [(set_attr "type" "logic,load")
 +   (set_attr "length" "1,1")])
 +
