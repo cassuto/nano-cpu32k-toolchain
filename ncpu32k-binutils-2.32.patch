@@ -30,7 +30,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
      &bfd_nios2_arch,
 diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutils-2.32/bfd/bfd-in2.h binutils-ncpu32k-2.32/bfd/bfd-in2.h
 --- binutils-2.32/bfd/bfd-in2.h	2019-01-20 00:01:32.000000000 +0800
-+++ binutils-ncpu32k-2.32/bfd/bfd-in2.h	2020-02-04 20:56:52.309317280 +0800
++++ binutils-ncpu32k-2.32/bfd/bfd-in2.h	2020-02-11 22:39:19.138083725 +0800
 @@ -2441,6 +2441,10 @@
  #define bfd_mach_ck803         5
  #define bfd_mach_ck807         6
@@ -42,7 +42,7 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
    bfd_arch_last
    };
  
-@@ -5643,6 +5647,17 @@
+@@ -5643,6 +5647,20 @@
    BFD_RELOC_NIOS2_R2_T1X1I6,
    BFD_RELOC_NIOS2_R2_T1X1I6_2,
  
@@ -56,6 +56,9 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +  BFD_RELOC_NCPU32K_JMP_SLOT,
 +  BFD_RELOC_NCPU32K_RELATIVE,
 +  BFD_RELOC_NCPU32K_COPY,
++  BFD_RELOC_NCPU32K_GOT_PCREL_HI18,
++  BFD_RELOC_NCPU32K_GOT_PCREL_LO14,
++  BFD_RELOC_NCPU32K_PLT_REL26,
 +
  /* PRU LDI 16-bit unsigned data-memory relocation.  */
    BFD_RELOC_PRU_U16,
@@ -149,8 +152,8 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +
 diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutils-2.32/bfd/elf32-ncpu32k.c binutils-ncpu32k-2.32/bfd/elf32-ncpu32k.c
 --- binutils-2.32/bfd/elf32-ncpu32k.c	1970-01-01 08:00:00.000000000 +0800
-+++ binutils-ncpu32k-2.32/bfd/elf32-ncpu32k.c	2020-02-04 21:04:10.841314755 +0800
-@@ -0,0 +1,2247 @@
++++ binutils-ncpu32k-2.32/bfd/elf32-ncpu32k.c	2020-02-11 23:15:03.698108250 +0800
+@@ -0,0 +1,2300 @@
 +/* nano-CPU32k-specific support for 32-bit ELF.
 +   Copyright (C) 2019 Free Software Foundation, Inc.
 +   largely based on elf32-or1k.c elf32-m32r.c and elf32-microblaze.c.
@@ -403,6 +406,48 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +	 0xffffffff,		/* src_mask */
 +	 0xffffffff,		/* dst_mask */
 +	 FALSE),		/* pcrel_offset */
++	 
++  HOWTO (R_NCPU32K_GOT_PCREL_HI18,	/* Type.  */
++	 14,			/* Rightshift.  */
++	 2,			/* Size (0 = byte, 1 = short, 2 = long).  */
++	 18,			/* Bitsize.  */
++	 TRUE,			/* PC_relative.  */
++	 12,			/* Bitpos.  */
++	 complain_overflow_dont, /* Complain on overflow.  */
++	 bfd_elf_generic_reloc, /* Special Function.  */
++	 "R_NCPU32K_GOT_PCREL_HI18",	/* Name.  */
++	 FALSE,		/* Partial Inplace.  */
++	 0,			/* Source Mask.  */
++	 0x3ffff000,		/* Dest Mask.  */
++	 TRUE),			/* PC relative offset?  */
++
++  HOWTO (R_NCPU32K_GOT_PCREL_LO14, /* Type.  */
++	 0,			/* Rightshift.  */
++	 2,			/* Size (0 = byte, 1 = short, 2 = long).  */
++	 14,			/* Bitsize.  */
++	 TRUE,			/* PC_relative.  */
++	 18,			/* Bitpos.  */
++	 complain_overflow_dont, /* Complain on overflow.  */
++	 bfd_elf_generic_reloc, /* Special Function.  */
++	 "R_NCPU32K_GOT_PCREL_LO14",	/* Name.  */
++	 FALSE,		/* Partial Inplace.  */
++	 0,			/* Source Mask.  */
++	 0xfffc0000,		/* Dest Mask.  */
++	 TRUE),			/* PC relative offset?  */
++	 
++  HOWTO (R_NCPU32K_PLT_REL26,	/* Type.  */
++	 2,			/* Rightshift.  */
++	 2,			/* Size (0 = byte, 1 = short, 2 = long).  */
++	 26,			/* Bitsize.  */
++	 TRUE,			/* pc_relative.  */
++	 6,			/* Bitpos.  */
++	 complain_overflow_signed, /* Complain on overflow.  */
++	 bfd_elf_generic_reloc, /* Special Function.  */
++	 "R_NCPU32K_PLT_REL26",	/* Name.  */
++	 FALSE,			/* Partial Inplace.  */
++	 0,			/* Source Mask.  */
++	 0xffffffc0,		/* Dest Mask.  */
++	 TRUE),			/* PC relative offset?  */
 +
 +};
 +
@@ -431,6 +476,9 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +  { BFD_RELOC_NCPU32K_COPY,		R_NCPU32K_COPY },
 +  { BFD_RELOC_NCPU32K_JMP_SLOT,		R_NCPU32K_JMP_SLOT },
 +  { BFD_RELOC_NCPU32K_RELATIVE,		R_NCPU32K_RELATIVE },
++  { BFD_RELOC_NCPU32K_GOT_PCREL_HI18,	R_NCPU32K_GOT_PCREL_HI18 },
++  { BFD_RELOC_NCPU32K_GOT_PCREL_LO14,	R_NCPU32K_GOT_PCREL_LO14 },
++  { BFD_RELOC_NCPU32K_PLT_REL26,	R_NCPU32K_PLT_REL26 },
 +};
 +
 +#define TLS_UNKNOWN    0
@@ -474,8 +522,6 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +
 +  /* Small local sym to section mapping cache.  */
 +  struct sym_cache sym_sec;
-+
-+  bfd_boolean saw_plta;
 +};
 +
 +/* Get the ELF linker hash table from a link_info structure.  */
@@ -852,6 +898,24 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +
 +      switch (howto->type)
 +	{
++	case R_NCPU32K_PLT_REL26:
++	  /* If the call is not local, redirect the branch to the PLT.
++	     Otherwise do nothing to send the branch to the symbol direct.  */
++	  if (!SYMBOL_CALLS_LOCAL (info, h)
++	      && h->plt.offset != (bfd_vma) -1)
++	    relocation = plt_base + h->plt.offset;
++
++	  /* Addend should be zero.  */
++	  if (rel->r_addend != 0)
++	    {
++	      _bfd_error_handler
++		(_("%pB: addend should be zero for plt relocations"),
++		 input_bfd);
++	      bfd_set_error (bfd_error_bad_value);
++	      ret_val = FALSE;
++	    }
++	  break;
++	  
 +	case R_NCPU32K_INSN_REL26:
 +	  /* For a non-shared link, these will reference either the plt
 +	     or a .dynbss copy of the symbol.  */
@@ -1247,6 +1311,15 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +	      }
 +	  }
 +	  break;
++	  
++	  /* needs plt */
++	case R_NCPU32K_PLT_REL26:
++	  if (h != NULL)
++	    {
++	      h->needs_plt = 1;
++	      h->plt.refcount += 1;
++	    }
++	  break;
 +	}
 +    }
 +
@@ -1265,7 +1338,6 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +#define NCPU32K_MOV(RD,IMM)		NCPU32K_IMM14_INSN32(IMM, 0,RD,0x0000001d) /* add.i */
 +#define NCPU32K_JMP(RS)			NCPU32K_ROP_INSN32(0, RS, NCPU32K_NREG_LNK,0x000a)
 +#define NCPU32K_AND_I(RD,RS1,IMM)	NCPU32K_IMM14_INSN32(IMM, RS1,	RD,0x0001)
-+#define NCPU32K_NOP			NCPU32K_ROP_INSN32(0, 0,	0,0x0002) /* or */
 +
 +/* Finish up the dynamic sections.  */
 +
@@ -1333,31 +1405,23 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +	{
 +	  bfd_vma got_addr = sgot->output_section->vma + sgot->output_offset;
 +
-+	  /* r15 is used to store the branch address. */
++	  /* clobber r15 to store the jmp address. */
 +
-+	  /* Note we force 16 byte alignment on the .got, so that
-+	     the movhi/adrp can be shared between the two loads.  */
-+
-+	  if (htab->saw_plta)
++	  if (bfd_link_pic (info))
 +	    {
-+	      bfd_vma pc = splt->output_section->vma + splt->output_offset;
-+	      unsigned pa = ((got_addr >> 13) - (pc >> 13)) & 0x1fffff;
-+	      unsigned po = got_addr & 0x1fff;
-+	      //FIXME! calc out page offset.
-+	      bfd_put_32 (output_bfd, NCPU32K_LDWU(15,NCPU32K_NREG_RVH, (po + 8)), splt->contents);
-+	      bfd_put_32 (output_bfd, NCPU32K_LDWU(NCPU32K_NREG_RVH,NCPU32K_NREG_RVH, (po + 4)), splt->contents);
-+	    }
-+	  else if (bfd_link_pic (info))
-+	    {
-+	      bfd_put_32 (output_bfd, NCPU32K_LDWU(15, NCPU32K_NREG_GOT, 8), splt->contents);			/* .got+8 */
-+	      bfd_put_32 (output_bfd, NCPU32K_LDWU(NCPU32K_NREG_RVH, NCPU32K_NREG_GOT, 4), splt->contents);	/* .got+4 */
++	      /* load GOT[2] */
++	      bfd_put_32 (output_bfd, NCPU32K_LDWU(15, NCPU32K_NREG_GOT, 8), splt->contents);
++	      /* load GOT[1] */
++	      bfd_put_32 (output_bfd, NCPU32K_LDWU(NCPU32K_NREG_RVH, NCPU32K_NREG_GOT, 4), splt->contents);
 +	    }
 +	  else
 +	    {
-+	      unsigned ha = ((got_addr + 0x8000) >> 16) & 0xffff;
-+	      unsigned lo = got_addr & 0xffff;
-+	      bfd_put_32 (output_bfd, NCPU32K_MHI(NCPU32K_NREG_RVH, ha), splt->contents);
++	      unsigned sh = ((got_addr + 0x2000) >> 14) & 0x3ffff;
++	      unsigned lo = got_addr & 0x3fff;
++	      bfd_put_32 (output_bfd, NCPU32K_MHI(NCPU32K_NREG_RVH, sh), splt->contents);
++	      /* load GOT[2] */
 +	      bfd_put_32 (output_bfd, NCPU32K_LDWU(15,NCPU32K_NREG_RVH, lo + 8), splt->contents);
++	      /* load GOT[1] */
 +	      bfd_put_32 (output_bfd, NCPU32K_LDWU(NCPU32K_NREG_RVH,NCPU32K_NREG_RVH, lo + 4), splt->contents);
 +	    }
 +
@@ -1443,24 +1507,16 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +      got_addr = got_base_addr + got_offset;
 +
 +      /* Fill in the entry in the procedure linkage table.  */
-+      if (htab->saw_plta)
-+	{
-+	  unsigned pa = ((got_addr >> 13) - (plt_addr >> 13)) & 0x1fffff;
-+	  unsigned po = (got_addr & 0x1fff);
-+	  //FIXME! calc out page offset.
-+	  bfd_put_32 (output_bfd, NCPU32K_LDWU(NCPU32K_NREG_RVH,NCPU32K_NREG_RVH, po), splt->contents + h->plt.offset);
-+	  bfd_put_32 (output_bfd, NCPU32K_MOV(NCPU32K_NREG_RV, plt_reloc), splt->contents + h->plt.offset);
-+	}
-+      else if (bfd_link_pic (info))
++      if (bfd_link_pic (info))
 +	{
 +	  bfd_put_32 (output_bfd, NCPU32K_LDWU(NCPU32K_NREG_RVH,NCPU32K_NREG_GOT, got_offset), splt->contents + h->plt.offset);
 +	  bfd_put_32 (output_bfd, NCPU32K_MOV(NCPU32K_NREG_RV, plt_reloc), splt->contents + h->plt.offset);
 +	}
 +      else
 +	{
-+	  unsigned ha = ((got_addr + 0x8000) >> 16) & 0xffff;
-+	  unsigned lo = got_addr & 0xffff;
-+	  bfd_put_32 (output_bfd, NCPU32K_MHI(NCPU32K_NREG_RVH, ha), splt->contents + h->plt.offset);
++	  unsigned sh = ((got_addr + 0x2000) >> 14) & 0x3ffff;
++	  unsigned lo = got_addr & 0x3fff;
++	  bfd_put_32 (output_bfd, NCPU32K_MHI(NCPU32K_NREG_RVH, sh), splt->contents + h->plt.offset);
 +	  bfd_put_32 (output_bfd, NCPU32K_LDWU(NCPU32K_NREG_RVH,NCPU32K_NREG_RVH,lo), splt->contents + h->plt.offset);
 +	  bfd_put_32 (output_bfd, NCPU32K_MOV(NCPU32K_NREG_RV, plt_reloc), splt->contents + h->plt.offset);
 +	}
@@ -2411,8 +2467,8 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
  
 diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutils-2.32/bfd/libbfd.h binutils-ncpu32k-2.32/bfd/libbfd.h
 --- binutils-2.32/bfd/libbfd.h	2019-01-20 00:01:33.000000000 +0800
-+++ binutils-ncpu32k-2.32/bfd/libbfd.h	2020-02-04 20:56:52.345317280 +0800
-@@ -2801,6 +2801,15 @@
++++ binutils-ncpu32k-2.32/bfd/libbfd.h	2020-02-11 22:39:19.146083725 +0800
+@@ -2801,6 +2801,18 @@
    "BFD_RELOC_NIOS2_R2_L5I4X1",
    "BFD_RELOC_NIOS2_R2_T1X1I6",
    "BFD_RELOC_NIOS2_R2_T1X1I6_2",
@@ -2425,6 +2481,9 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +  "BFD_RELOC_NCPU32K_JMP_SLOT",
 +  "BFD_RELOC_NCPU32K_RELATIVE",
 +  "BFD_RELOC_NCPU32K_COPY",
++  "BFD_RELOC_NCPU32K_GOT_PCREL_HI18",
++  "BFD_RELOC_NCPU32K_GOT_PCREL_LO14",
++  "BFD_RELOC_NCPU32K_PLT_REL26",
    "BFD_RELOC_PRU_U16",
    "BFD_RELOC_PRU_U16_PMEMIMM",
    "BFD_RELOC_PRU_LDI32",
@@ -2516,8 +2575,8 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf32-or1k.Plo@am__quote@
 diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutils-2.32/bfd/reloc.c binutils-ncpu32k-2.32/bfd/reloc.c
 --- binutils-2.32/bfd/reloc.c	2019-01-20 00:01:33.000000000 +0800
-+++ binutils-ncpu32k-2.32/bfd/reloc.c	2020-02-04 20:54:06.981318232 +0800
-@@ -6463,6 +6463,27 @@
++++ binutils-ncpu32k-2.32/bfd/reloc.c	2020-02-11 22:16:26.830068031 +0800
+@@ -6463,6 +6463,33 @@
    Relocations used by the Altera Nios II core.
  
  ENUM
@@ -2538,6 +2597,12 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +  BFD_RELOC_NCPU32K_RELATIVE
 +ENUMX
 +  BFD_RELOC_NCPU32K_COPY
++ENUMX
++  BFD_RELOC_NCPU32K_GOT_PCREL_HI18
++ENUMX
++  BFD_RELOC_NCPU32K_GOT_PCREL_LO14
++ENUMX
++  BFD_RELOC_NCPU32K_PLT_REL26
 +ENUMDOC
 +  nano-cpu32k Relocations.
 +
@@ -3763,8 +3828,8 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 + )
 diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutils-2.32/cpu/ncpu32k.opc binutils-ncpu32k-2.32/cpu/ncpu32k.opc
 --- binutils-2.32/cpu/ncpu32k.opc	1970-01-01 08:00:00.000000000 +0800
-+++ binutils-ncpu32k-2.32/cpu/ncpu32k.opc	2020-02-04 20:54:32.577318085 +0800
-@@ -0,0 +1,208 @@
++++ binutils-ncpu32k-2.32/cpu/ncpu32k.opc	2020-02-11 22:42:03.906085609 +0800
+@@ -0,0 +1,259 @@
 +/* nano-CPU32k opcode support.  -*- C -*-
 +   Copyright 2019 Free Software Foundation, Inc.
 +
@@ -3818,7 +3883,26 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +	      enum cgen_parse_operand_result * resultp,
 +	      bfd_vma * valuep)
 +{
-+  return cgen_parse_address (cd, strp, opindex, BFD_RELOC_NCPU32K_INSN_REL26, resultp, valuep);
++  const char *str = *strp;
++  const char *errmsg = NULL;
++  bfd_reloc_code_real_type reloc = BFD_RELOC_NCPU32K_INSN_REL26;
++  
++  if (strncasecmp (str, "plt(", 4) == 0)
++    {
++      *strp = str + 4;
++      reloc = BFD_RELOC_NCPU32K_PLT_REL26;
++    }
++
++  errmsg = cgen_parse_address (cd, strp, opindex, reloc, resultp, valuep);
++
++  if (reloc != BFD_RELOC_NCPU32K_INSN_REL26)
++    {
++      if (**strp != ')')
++	errmsg = MISSING_CLOSING_PARENTHESIS;
++      else
++	++*strp;
++    }
++  return errmsg;
 +}
 +
 +static const char *
@@ -3870,6 +3954,22 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +	  ret &= 0x3fff;
 +	  ret = (ret ^ 0x2000) - 0x2000;
 +	}
++    }
++  else if (strncasecmp (*strp, "got_pcrel_lo(", 13) == 0)
++    {
++      bfd_vma value;
++
++      *strp += 13;
++      errmsg = cgen_parse_address (cd, strp, opindex,
++				   BFD_RELOC_NCPU32K_GOT_PCREL_LO14,
++				   &result_type, &value);
++      if (**strp != ')')
++	return MISSING_CLOSING_PARENTHESIS;
++      ++*strp;
++      if (errmsg == NULL
++	  && result_type == CGEN_PARSE_OPERAND_RESULT_NUMBER)
++	value &= 0x3fff;
++      ret = value;
 +    }
 +  else
 +    {
@@ -3944,6 +4044,22 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +	  ret &= 0x3ffff;
 +	  ret = (ret ^ 0x20000) - 0x20000;
 +	}
++    }
++  if (strncasecmp (*strp, "got_pcrel_hi(", 13) == 0)
++    {
++      bfd_vma value;
++
++      *strp += 13;
++      errmsg = cgen_parse_address (cd, strp, opindex,
++				   BFD_RELOC_NCPU32K_GOT_PCREL_HI18,
++				   & result_type, & value);
++      if (**strp != ')')
++	return MISSING_CLOSING_PARENTHESIS;
++      ++*strp;
++      if (errmsg == NULL
++	  && result_type == CGEN_PARSE_OPERAND_RESULT_NUMBER)
++	value = (value >> 14) & 0x3ffff;
++      ret = value;
 +    }
 +  else
 +    {
@@ -4562,8 +4678,8 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
  /* Values for e_version.  */
 diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutils-2.32/include/elf/ncpu32k.h binutils-ncpu32k-2.32/include/elf/ncpu32k.h
 --- binutils-2.32/include/elf/ncpu32k.h	1970-01-01 08:00:00.000000000 +0800
-+++ binutils-ncpu32k-2.32/include/elf/ncpu32k.h	2020-02-04 20:53:59.653318275 +0800
-@@ -0,0 +1,44 @@
++++ binutils-ncpu32k-2.32/include/elf/ncpu32k.h	2020-02-11 22:14:03.070066387 +0800
+@@ -0,0 +1,47 @@
 +/* nano-CPU32k ELF support for BFD.
 +   Copyright (C) 2019 Free Software Foundation, Inc.
 +
@@ -4604,6 +4720,9 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +  RELOC_NUMBER (R_NCPU32K_GLOB_DAT,      12)
 +  RELOC_NUMBER (R_NCPU32K_JMP_SLOT,      13)
 +  RELOC_NUMBER (R_NCPU32K_RELATIVE,      14)
++  RELOC_NUMBER (R_NCPU32K_GOT_PCREL_HI18,	15)
++  RELOC_NUMBER (R_NCPU32K_GOT_PCREL_LO14,	16)
++  RELOC_NUMBER (R_NCPU32K_PLT_REL26,	17)
 +END_RELOC_NUMBERS (R_NCPU32K_max)
 +
 +#endif /* _ELF_NCPU32K_H */
@@ -4895,8 +5014,8 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
  stamp-or1k: $(CGENDEPS) $(CPUDIR)/or1k.cpu $(CPUDIR)/or1k.opc $(CPUDIR)/or1kcommon.cpu $(CPUDIR)/or1korbis.cpu $(CPUDIR)/or1korfpx.cpu
 diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutils-2.32/opcodes/ncpu32k-asm.c binutils-ncpu32k-2.32/opcodes/ncpu32k-asm.c
 --- binutils-2.32/opcodes/ncpu32k-asm.c	1970-01-01 08:00:00.000000000 +0800
-+++ binutils-ncpu32k-2.32/opcodes/ncpu32k-asm.c	2020-02-04 21:04:19.021314708 +0800
-@@ -0,0 +1,682 @@
++++ binutils-ncpu32k-2.32/opcodes/ncpu32k-asm.c	2020-02-11 22:42:07.774085653 +0800
+@@ -0,0 +1,733 @@
 +/* DO NOT EDIT!  -*- buffer-read-only: t -*- vi:set ro:  */
 +/* Assembler interface for targets using CGEN. -*- C -*-
 +   CGEN: Cpu tools GENerator
@@ -4962,7 +5081,26 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +	      enum cgen_parse_operand_result * resultp,
 +	      bfd_vma * valuep)
 +{
-+  return cgen_parse_address (cd, strp, opindex, BFD_RELOC_NCPU32K_INSN_REL26, resultp, valuep);
++  const char *str = *strp;
++  const char *errmsg = NULL;
++  bfd_reloc_code_real_type reloc = BFD_RELOC_NCPU32K_INSN_REL26;
++
++  if (strncasecmp (str, "plt(", 4) == 0)
++    {
++      *strp = str + 4;
++      reloc = BFD_RELOC_NCPU32K_PLT_REL26;
++    }
++
++  errmsg = cgen_parse_address (cd, strp, opindex, reloc, resultp, valuep);
++
++  if (reloc != BFD_RELOC_NCPU32K_INSN_REL26)
++    {
++      if (**strp != ')')
++	errmsg = MISSING_CLOSING_PARENTHESIS;
++      else
++	++*strp;
++    }
++  return errmsg;
 +}
 +
 +static const char *
@@ -5014,6 +5152,22 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +	  ret &= 0x3fff;
 +	  ret = (ret ^ 0x2000) - 0x2000;
 +	}
++    }
++  else if (strncasecmp (*strp, "got_pcrel_lo(", 13) == 0)
++    {
++      bfd_vma value;
++
++      *strp += 13;
++      errmsg = cgen_parse_address (cd, strp, opindex,
++				   BFD_RELOC_NCPU32K_GOT_PCREL_LO14,
++				   &result_type, &value);
++      if (**strp != ')')
++	return MISSING_CLOSING_PARENTHESIS;
++      ++*strp;
++      if (errmsg == NULL
++	  && result_type == CGEN_PARSE_OPERAND_RESULT_NUMBER)
++	value &= 0x3fff;
++      ret = value;
 +    }
 +  else
 +    {
@@ -5088,6 +5242,22 @@ diff -Nur -x cgen -x tags -x build -x .cproject -x .project -x .settings binutil
 +	  ret &= 0x3ffff;
 +	  ret = (ret ^ 0x20000) - 0x20000;
 +	}
++    }
++  if (strncasecmp (*strp, "got_pcrel_hi(", 13) == 0)
++    {
++      bfd_vma value;
++
++      *strp += 13;
++      errmsg = cgen_parse_address (cd, strp, opindex,
++				   BFD_RELOC_NCPU32K_GOT_PCREL_HI18,
++				   & result_type, & value);
++      if (**strp != ')')
++	return MISSING_CLOSING_PARENTHESIS;
++      ++*strp;
++      if (errmsg == NULL
++	  && result_type == CGEN_PARSE_OPERAND_RESULT_NUMBER)
++	value = (value >> 14) & 0x3ffff;
++      ret = value;
 +    }
 +  else
 +    {

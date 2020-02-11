@@ -3813,8 +3813,8 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +
 diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/config/ncpu32k/ncpu32k.md gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.md
 --- gcc-5.4.0/gcc/config/ncpu32k/ncpu32k.md	1970-01-01 08:00:00.000000000 +0800
-+++ gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.md	2020-02-10 21:27:16.674977896 +0800
-@@ -0,0 +1,1383 @@
++++ gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.md	2020-02-11 23:02:43.758099788 +0800
+@@ -0,0 +1,1384 @@
 +;; Machine description for GNU compiler, nano-cpu32k ISA
 +;; Copyright (C) 2019 Free Software Foundation, Inc.
 +;;
@@ -4543,7 +4543,7 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +   lsl \t%0,%1,16\t# zero_extendhisi2_reg\;lsr \t%0,%0,16\t# zero_extendhisi2_reg
 +   ldhu \t%0,%1\t# zero_extendhisi2"
 +  [(set_attr "type" "logic,load")
-+   (set_attr "length" "1,1")])
++   (set_attr "length" "2,1")])
 +
 +;;***************************************************************************
 +;; Shift/rotate operations
@@ -5015,9 +5015,10 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +   (clobber (reg:SI LNK_REG))
 +   (clobber (reg:SI GOT_REG))]
 +  ""
-+    "jmp \tr0,8
-+    \tmhi \trgot, gotpchi(_GLOBAL_OFFSET_TABLE_-4)
-+    \tor \trgot,rgot, gotpclo(_GLOBAL_OFFSET_TABLE_+0)
++    "# set_got
++    \tjmp \tlnk,4
++    \tmhi \trgot, got_pcrel_hi(_GLOBAL_OFFSET_TABLE_+0)
++    \tor \trgot,rgot, got_pcrel_lo(_GLOBAL_OFFSET_TABLE_+4)
 +    \tadd \trgot,rgot, lnk"
 +  [(set_attr "length" "16")])
 +
