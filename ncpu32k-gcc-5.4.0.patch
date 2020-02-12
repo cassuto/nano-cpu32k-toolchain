@@ -340,8 +340,8 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +#define CLEAR_INSN_CACHE(BEG, END) /* Do something here !!! */
 diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/config/ncpu32k/ncpu32k.c gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.c
 --- gcc-5.4.0/gcc/config/ncpu32k/ncpu32k.c	1970-01-01 08:00:00.000000000 +0800
-+++ gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.c	2020-02-03 16:22:59.777491487 +0800
-@@ -0,0 +1,2326 @@
++++ gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.c	2020-02-12 15:32:23.707363728 +0800
+@@ -0,0 +1,2323 @@
 +/* Subroutines for insn-output.c for GNU compiler.  nano-cpu32k version.
 +   Copyright (C) 2019 Free Software Foundation, Inc
 +   largely based on ../or1k/or1k.c
@@ -1017,8 +1017,8 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +	  && !SYMBOL_REF_WEAK (operands[1])))
 +    {
 +      crtl->uses_pic_offset_table = 1;
-+      emit_insn (gen_movsi_gotoffhi (operands[0], operands[1]));
-+      emit_insn (gen_movsi_gotofflo (operands[0], operands[0],
++      emit_insn (gen_movsi_gotoff_hi (operands[0], operands[1]));
++      emit_insn (gen_movsi_gotoff_lo (operands[0], operands[0],
 +				     operands[1]));
 +      emit_insn (gen_add3_insn(operands[0], operands[0],
 +			       pic_offset_table_rtx));
@@ -1041,8 +1041,8 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +      if (SYMBOL_REF_LOCAL_P (symbolref)
 +	  && !SYMBOL_REF_WEAK (symbolref))
 +	{
-+	  emit_insn (gen_movsi_gotoffhi (operands[0], operands[1]));
-+	  emit_insn (gen_movsi_gotofflo (operands[0], operands[0],
++	  emit_insn (gen_movsi_gotoff_hi (operands[0], operands[1]));
++	  emit_insn (gen_movsi_gotoff_lo (operands[0], operands[0],
 +					 operands[1]));
 +	  emit_insn (gen_add3_insn(operands[0], operands[0],
 +				   pic_offset_table_rtx));
@@ -1996,9 +1996,6 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +   the called function.
 +
 +   On the NCPU32K we never split argumetns between registers and memory.
-+
-+   FIXME?: Is this correct? Surely we should allow this. The ABI spec
-+                  is incomplete on this point.
 +
 +   @param[in] cum    Position of argument under consideration.
 +   @param[in[ mode   Not sure what this relates to.
@@ -3813,7 +3810,7 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +
 diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/config/ncpu32k/ncpu32k.md gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.md
 --- gcc-5.4.0/gcc/config/ncpu32k/ncpu32k.md	1970-01-01 08:00:00.000000000 +0800
-+++ gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.md	2020-02-11 23:02:43.758099788 +0800
++++ gcc-ncpu32k-5.4.0/gcc/config/ncpu32k/ncpu32k.md	2020-02-12 15:19:39.659406712 +0800
 @@ -0,0 +1,1384 @@
 +;; Machine description for GNU compiler, nano-cpu32k ISA
 +;; Copyright (C) 2019 Free Software Foundation, Inc.
@@ -4108,20 +4105,20 @@ diff -Nur -x tags -x build -x .cproject -x .project -x .settings gcc-5.4.0/gcc/c
 +[(set_attr "type" "move")
 +   (set_attr "length" "1")])
 +
-+(define_insn "movsi_gotofflo"
++(define_insn "movsi_gotoff_lo"
 +  [(set (match_operand:SI 0 "register_operand" "=r")
 + 	(unspec:SI [(lo_sum:SI (match_operand:SI 1 "register_operand" "r")
 +                    (match_operand 2 "" ""))] UNSPEC_GOTOFFLO))]
 +  "flag_pic"
-+  "or \t%0,%1,gotofflo(%2)\t# movsi_gotofflo"
++  "or \t%0,%1,gotoff_lo(%2)\t# movsi_gotoff_lo"
 +  [(set_attr "type" "logic")
 +   (set_attr "length" "1")])
 +
-+(define_insn "movsi_gotoffhi"
++(define_insn "movsi_gotoff_hi"
 +  [(set (match_operand:SI 0 "register_operand" "=r")
 + 	(unspec:SI [(match_operand 1 "" "")] UNSPEC_GOTOFFHI))]
 +  "flag_pic"
-+  "mhi \t%0,gotoffhi(%1)\t# movsi_gotoffhi"
++  "mhi \t%0,gotoff_hi(%1)\t# movsi_gotoff_hi"
 +  [(set_attr "type" "move")
 +   (set_attr "length" "1")])
 +
